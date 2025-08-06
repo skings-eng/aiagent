@@ -1,0 +1,494 @@
+# Dependencies
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# Build outputs
+dist/
+build/
+*.tsbuildinfo
+
+# Environment variables
+.env
+.env.local
+.env.development
+.env.production
+.env.staging
+
+# Keep example files
+!.env.example
+!.env.test
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+.pnpm-debug.log*
+
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# Coverage directory used by tools like istanbul
+coverage/
+*.lcov
+
+# nyc test coverage
+.nyc_output
+
+# Grunt intermediate storage
+.grunt
+
+# Bower dependency directory
+bower_components
+
+# node-waf configuration
+.lock-wscript
+
+# Compiled binary addons
+build/Release
+
+# Dependency directories
+node_modules/
+jspm_packages/
+
+# Snowpack dependency directory
+web_modules/
+
+# TypeScript cache
+*.tsbuildinfo
+
+# Optional npm cache directory
+.npm
+
+# Optional eslint cache
+.eslintcache
+
+# Optional stylelint cache
+.stylelintcache
+
+# Microbundle cache
+.rpt2_cache/
+.rts2_cache_cjs/
+.rts2_cache_es/
+.rts2_cache_umd/
+
+# Optional REPL history
+.node_repl_history
+
+# Output of 'npm pack'
+*.tgz
+
+# Yarn Integrity file
+.yarn-integrity
+
+# dotenv environment variable files
+.env.development.local
+.env.test.local
+.env.production.local
+.env.local
+
+# parcel-bundler cache
+.cache
+.parcel-cache
+
+# Next.js build output
+.next
+out
+
+# Nuxt.js build / generate output
+.nuxt
+dist
+
+# Gatsby files
+.cache/
+public
+
+# Vuepress build output
+.vuepress/dist
+
+# Serverless directories
+.serverless/
+
+# FuseBox cache
+.fusebox/
+
+# DynamoDB Local files
+.dynamodb/
+
+# TernJS port file
+.tern-port
+
+# Stores VSCode versions used for testing VSCode extensions
+.vscode-test
+
+# yarn v2
+.yarn/cache
+.yarn/unplugged
+.yarn/build-state.yml
+.yarn/install-state.gz
+.pnp.*
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Application specific
+uploads/
+backups/
+temp/
+tmp/
+
+# SSL certificates
+ssl/
+*.pem
+*.key
+*.crt
+*.csr
+
+# Docker
+.dockerignore
+docker-compose.override.yml
+
+# Redis dump
+dump.rdb
+
+# Jest
+.jest-cache/
+junit.xml
+
+# ESLint
+.eslintcache
+
+# Prettier
+.prettierignore
+
+# Local configuration
+local.json
+config/local.json
+config/local-*.json
+
+# PM2
+ecosystem.config.js
+
+# Monitoring
+prometheus_data/
+grafana_data/
+
+# Backup files
+*.bak
+*.backup
+*.old
+
+# Archive files
+*.zip
+*.tar
+*.tar.gz
+*.rar
+*.7z
+
+# Temporary files
+*.tmp
+*.temp
+
+# Lock files (keep package-lock.json for consistency)
+# package-lock.json
+
+# Local development
+.local/
+local/
+
+# Test artifacts
+test-results/
+test-reports/
+
+# Documentation build
+docs/build/
+docs/dist/
+
+# Storybook
+storybook-static/
+
+# Webpack
+.webpack/
+
+# Rollup
+.rollup.cache/
+
+# Parcel
+.parcel-cache/
+
+# Vite
+.vite/
+
+# SvelteKit
+.svelte-kit/
+
+# Astro
+.astro/
+
+# Remix
+.remix/
+
+# Turborepo
+.turbo/
+
+# Vercel
+.vercel/
+
+# Netlify
+.netlify/
+
+# Firebase
+.firebase/
+
+# Supabase
+.supabase/
+
+# Planetscale
+.pscale/
+
+# Railway
+.railway/
+
+# Fly.io
+fly.toml
+
+# Heroku
+Procfile
+
+# AWS
+.aws/
+
+# Google Cloud
+.gcloud/
+
+# Azure
+.azure/
+
+# Terraform
+*.tfstate
+*.tfstate.*
+.terraform/
+.terraform.lock.hcl
+
+# Ansible
+*.retry
+
+# Vagrant
+.vagrant/
+
+# VirtualBox
+*.vbox
+*.vdi
+
+# VMware
+*.vmx
+*.vmdk
+
+# Kubernetes
+*.kubeconfig
+kubeconfig
+
+# Helm
+.helm/
+
+# Skaffold
+skaffold.yaml
+
+# Tilt
+Tiltfile
+
+# Local development overrides
+docker-compose.local.yml
+docker-compose.dev.yml
+docker-compose.override.yml
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+
+# Redis
+redis.conf
+redis.prod.conf
+
+# Nginx
+nginx.conf
+nginx.prod.conf
+nginx-logs/
+
+# Certificates
+certs/
+certificates/
+
+# Keys
+keys/
+*.key
+*.pem
+
+# Secrets
+secrets/
+*.secret
+
+# Configuration overrides
+config.local.json
+config.override.json
+
+# Performance monitoring
+.clinic/
+0x/
+
+# Profiling
+*.cpuprofile
+*.heapprofile
+*.heapsnapshot
+
+# Memory dumps
+*.hprof
+
+# Core dumps
+core.*
+
+# Application crashes
+crash.log
+
+# Debug files
+*.debug
+
+# Benchmark results
+benchmark-results/
+
+# Load testing
+load-test-results/
+
+# Security scanning
+security-scan-results/
+
+# Dependency scanning
+dependency-scan-results/
+
+# Code quality reports
+code-quality-reports/
+
+# Audit reports
+audit-reports/
+
+# License scanning
+license-scan-results/
+
+# SBOM (Software Bill of Materials)
+sbom/
+*.spdx
+*.cyclonedx
+
+# Container scanning
+container-scan-results/
+
+# Infrastructure scanning
+infra-scan-results/
+
+# Compliance reports
+compliance-reports/
+
+# Penetration testing
+pentest-results/
+
+# Vulnerability scanning
+vuln-scan-results/
+
+# Threat modeling
+threat-model/
+
+# Risk assessment
+risk-assessment/
+
+# Business continuity
+bcp/
+
+# Disaster recovery
+dr/
+
+# Incident response
+ir/
+
+# Forensics
+forensics/
+
+# Legal hold
+legal-hold/
+
+# eDiscovery
+ediscovery/
+
+# Compliance
+compliance/
+
+# Audit
+audit/
+
+# Governance
+governance/
+
+# Risk management
+risk-mgmt/
+
+# Privacy
+privacy/
+
+# Data protection
+data-protection/
+
+# GDPR
+gdpr/
+
+# CCPA
+ccpa/
+
+# HIPAA
+hipaa/
+
+# SOX
+sox/
+
+# PCI DSS
+pci-dss/
+
+# ISO 27001
+iso27001/
+
+# NIST
+nist/
+
+# CIS
+cis/
+
+# OWASP
+owasp/
+
+# SANS
+sans/
+
+# MITRE
+mitre/

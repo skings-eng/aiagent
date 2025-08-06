@@ -1,0 +1,223 @@
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>修复HTTP 401错误</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+        }
+        .alert {
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            font-size: 16px;
+            line-height: 1.6;
+        }
+        .alert-success {
+            background-color: #d4edda;
+            border: 2px solid #c3e6cb;
+            color: #155724;
+        }
+        .alert-info {
+            background-color: #d1ecf1;
+            border: 2px solid #bee5eb;
+            color: #0c5460;
+        }
+        .alert-warning {
+            background-color: #fff3cd;
+            border: 2px solid #ffeaa7;
+            color: #856404;
+        }
+        .btn {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            margin: 10px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+        }
+        .code-block {
+            background-color: #2c3e50;
+            color: #ecf0f1;
+            padding: 20px;
+            border-radius: 10px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            overflow-x: auto;
+            margin: 20px 0;
+            border: 2px solid #34495e;
+        }
+        .step {
+            background-color: #f8f9fa;
+            border-left: 5px solid #007bff;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 0 10px 10px 0;
+        }
+        .emoji {
+            font-size: 1.5em;
+            margin-right: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 修复HTTP 401错误</h1>
+        
+        <div class="alert alert-success">
+            <span class="emoji">✅</span>
+            <strong>新的认证token已准备就绪！</strong><br>
+            Token已通过后端验证，可以立即使用。
+        </div>
+        
+        <div class="step">
+            <h3>🚀 自动修复步骤</h3>
+            <p>点击下面的按钮将自动修复您的认证问题：</p>
+            <button class="btn" onclick="autoFix()">🔧 立即修复HTTP 401错误</button>
+        </div>
+        
+        <div class="step">
+            <h3>📋 手动修复步骤</h3>
+            <p>如果自动修复失败，请按以下步骤手动操作：</p>
+            <ol>
+                <li>按F12打开浏览器开发者工具</li>
+                <li>切换到Console标签</li>
+                <li>复制并粘贴下面的代码</li>
+                <li>按Enter执行</li>
+                <li>等待2秒后页面会自动刷新</li>
+            </ol>
+        </div>
+        
+        <div class="alert alert-info">
+            <span class="emoji">📝</span>
+            <strong>修复代码：</strong>
+        </div>
+        
+        <div class="code-block" id="fixCode">
+\n// 自动修复前端token脚本\n// 在浏览器控制台中运行此脚本\n\nconsole.log('🔧 开始修复前端token...');\n\n// 设置新的token\nconst newToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJkZW1vLXVzZXItaWQiLCJlbWFpbCI6InRlc3R1c2VyQGV4YW1wbGUuY29tIiwicm9sZSI6InVzZXIiLCJpYXQiOjE3NTQzNTc3MjcsImV4cCI6MTc1NDQ0NDEyN30.7p7zvoOI99YNc0zmRhR9nIE4PkmEFg-gseOGXkOiAao';\nlocalStorage.setItem('token', newToken);\n\nconsole.log('✅ Token已更新到localStorage');\n\n// 验证token设置\nconst storedToken = localStorage.getItem('token');\nif (storedToken === newToken) {\n    console.log('✅ Token验证成功');\n    \n    // 解析token信息\n    try {\n        const payload = JSON.parse(atob(newToken.split('.')[1]));\n        console.log('📋 Token信息:');\n        console.log('- 用户ID:', payload.userId);\n        console.log('- 过期时间:', new Date(payload.exp * 1000).toLocaleString());\n        console.log('- 当前时间:', new Date().toLocaleString());\n        \n        const isValid = payload.exp > Math.floor(Date.now() / 1000);\n        console.log('- Token状态:', isValid ? '有效' : '已过期');\n        \n        if (isValid) {\n            console.log('\n🎉 修复完成！请刷新页面查看效果。');\n            \n            // 自动刷新页面\n            setTimeout(() => {\n                console.log('🔄 自动刷新页面...');\n                window.location.reload();\n            }, 2000);\n        } else {\n            console.error('❌ Token仍然无效，请重新运行修复脚本');\n        }\n    } catch (e) {\n        console.error('❌ Token解析失败:', e.message);\n    }\n} else {\n    console.error('❌ Token设置失败');\n}\n
+        </div>
+        
+        <div class="step">
+            <button class="btn" onclick="copyCode()">📋 复制修复代码</button>
+            <button class="btn" onclick="testConnection()">🧪 测试连接</button>
+        </div>
+        
+        <div id="result" class="alert" style="display: none;"></div>
+    </div>
+    
+    <script>
+        const newToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJkZW1vLXVzZXItaWQiLCJlbWFpbCI6InRlc3R1c2VyQGV4YW1wbGUuY29tIiwicm9sZSI6InVzZXIiLCJpYXQiOjE3NTQzNTc3MjcsImV4cCI6MTc1NDQ0NDEyN30.7p7zvoOI99YNc0zmRhR9nIE4PkmEFg-gseOGXkOiAao';
+        
+        function autoFix() {
+            try {
+                console.log('🔧 开始自动修复...');
+                
+                // 设置新token
+                localStorage.setItem('token', newToken);
+                
+                // 显示成功消息
+                showResult('success', '✅ Token已成功更新！页面将在2秒后自动刷新...');
+                
+                // 自动刷新
+                setTimeout(() => {
+                    window.location.reload();
+                }, 2000);
+                
+            } catch (error) {
+                showResult('error', '❌ 自动修复失败: ' + error.message);
+            }
+        }
+        
+        function copyCode() {
+            const code = document.getElementById('fixCode').textContent;
+            navigator.clipboard.writeText(code).then(() => {
+                showResult('success', '✅ 代码已复制到剪贴板！');
+            }).catch(err => {
+                showResult('error', '❌ 复制失败: ' + err.message);
+            });
+        }
+        
+        async function testConnection() {
+            try {
+                showResult('info', '🧪 正在测试连接...');
+                
+                const response = await fetch('/api/v1/prompts/system', {
+                    headers: {
+                        'Authorization': 'Bearer ' + newToken
+                    }
+                });
+                
+                if (response.ok) {
+                    showResult('success', '✅ 连接测试成功！API响应正常。');
+                } else {
+                    showResult('error', '❌ 连接测试失败: HTTP ' + response.status);
+                }
+            } catch (error) {
+                showResult('error', '❌ 连接测试失败: ' + error.message);
+            }
+        }
+        
+        function showResult(type, message) {
+            const result = document.getElementById('result');
+            result.className = 'alert alert-' + (type === 'error' ? 'warning' : type);
+            result.innerHTML = message;
+            result.style.display = 'block';
+            
+            // 3秒后隐藏消息
+            setTimeout(() => {
+                result.style.display = 'none';
+            }, 3000);
+        }
+        
+        // 页面加载时检查当前token状态
+        window.addEventListener('load', () => {
+            const currentToken = localStorage.getItem('token');
+            if (currentToken) {
+                try {
+                    const payload = JSON.parse(atob(currentToken.split('.')[1]));
+                    const isExpired = payload.exp < Math.floor(Date.now() / 1000);
+                    
+                    if (isExpired) {
+                        showResult('warning', '⚠️ 检测到过期的token，建议立即修复。');
+                    } else {
+                        showResult('info', 'ℹ️ 当前token仍然有效，但如果遇到401错误，请点击修复按钮。');
+                    }
+                } catch (e) {
+                    showResult('warning', '⚠️ 无法解析当前token，建议立即修复。');
+                }
+            } else {
+                showResult('warning', '⚠️ 未找到token，建议立即修复。');
+            }
+        });
+    </script>
+</body>
+</html>

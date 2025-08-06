@@ -1,0 +1,68 @@
+{
+  "name": "japan-stock-ai-agent",
+  "version": "1.0.0",
+  "description": "日本股票市场AI分析智能体系统",
+  "private": true,
+  "workspaces": [
+    "frontend/b-end",
+    "frontend/c-end",
+    "backend/api",
+    "backend/line",
+    "shared"
+  ],
+  "scripts": {
+    "dev": "concurrently \"npm run dev:b-end\" \"npm run dev:c-end\" \"npm run dev:api\"",
+    "dev:b-end": "cd frontend/b-end && npm run dev",
+    "dev:c-end": "cd frontend/c-end && npm run dev",
+    "dev:api": "cd backend/api && npm run dev",
+    "dev:line": "cd backend/line && npm run dev",
+    "build": "npm run build:shared && npm run build:frontend && npm run build:backend",
+    "build:shared": "cd shared && npm run build",
+    "build:frontend": "npm run build:b-end && npm run build:c-end",
+    "build:b-end": "cd frontend/b-end && npm run build",
+    "build:c-end": "cd frontend/c-end && npm run build",
+    "build:backend": "npm run build:api && npm run build:line",
+    "build:api": "cd backend/api && npm run build",
+    "build:line": "cd backend/line && npm run build",
+    "test": "npm run test:frontend && npm run test:backend",
+    "test:frontend": "npm run test:b-end && npm run test:c-end",
+    "test:b-end": "cd frontend/b-end && npm run test",
+    "test:c-end": "cd frontend/c-end && npm run test",
+    "test:backend": "npm run test:api && npm run test:line",
+    "test:api": "cd backend/api && npm run test",
+    "test:line": "cd backend/line && npm run test",
+    "lint": "eslint . --ext .ts,.tsx,.js,.jsx",
+    "lint:fix": "eslint . --ext .ts,.tsx,.js,.jsx --fix",
+    "docker:up": "docker-compose up -d",
+    "docker:down": "docker-compose down",
+    "docker:build": "docker-compose build"
+  },
+  "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^6.0.0",
+    "@typescript-eslint/parser": "^6.0.0",
+    "concurrently": "^8.2.0",
+    "eslint": "^8.45.0",
+    "eslint-config-prettier": "^8.8.0",
+    "eslint-plugin-prettier": "^5.0.0",
+    "prettier": "^3.0.0",
+    "typescript": "^5.1.6"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0"
+  },
+  "keywords": [
+    "stock-analysis",
+    "ai-agent",
+    "japan-market",
+    "line-integration",
+    "react",
+    "nodejs",
+    "typescript"
+  ],
+  "author": "AI Agent Team",
+  "license": "MIT",
+  "dependencies": {
+    "puppeteer": "^24.15.0"
+  }
+}
