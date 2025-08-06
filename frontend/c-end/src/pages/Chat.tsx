@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Send, Bot, User, Loader2 } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import { chatAPI, ChatMessage } from '../services/api';
@@ -15,7 +15,7 @@ const Chat: React.FC = () => {
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const { user } = useAuth();
+  const { } = useAuth();
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });

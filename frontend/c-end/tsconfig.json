@@ -36,8 +36,7 @@
     "sourceMap": true
   },
   "include": [
-    "src",
-    "../../shared/src"
+    "src"
   ],
   "exclude": [
     "node_modules",
@@ -48,9 +47,6 @@
     "**/*.spec.tsx"
   ],
   "references": [
-    {
-      "path": "./tsconfig.node.json"
-    },
     {
       "path": "../../shared/tsconfig.json"
     }

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useMutation, useQuery } from 'react-query';
 import {
@@ -8,7 +8,6 @@ import {
   ClockIcon,
 } from '@heroicons/react/24/outline';
 import LoadingSpinner from '../components/LoadingSpinner';
-import clsx from 'clsx';
 
 interface SystemPrompt {
   id: string;
@@ -40,7 +39,7 @@ const Prompts: React.FC = () => {
   );
 
   // Save prompt mutation
-  const savePromptMutation = useMutation(
+  const savePromptMutation = useMutation<SystemPrompt, Error, string>(
     async (content: string) => {
       // Simulate API call to save system prompt
       await new Promise(resolve => setTimeout(resolve, 1000));
@@ -172,7 +171,7 @@ const Prompts: React.FC = () => {
           </div>
 
           {/* Success Message */}
-          {savePromptMutation.isSuccess && (
+          {savePromptMutation.isSuccess ? (
             <div className="p-3 bg-green-50 border border-green-200 rounded-md">
               <div className="flex items-center gap-2">
                 <CheckIcon className="h-4 w-4 text-green-500" />
@@ -181,7 +180,7 @@ const Prompts: React.FC = () => {
                 </span>
               </div>
             </div>
-          )}
+          ) : null}
 
           {/* Error Message */}
           {savePromptMutation.error && (

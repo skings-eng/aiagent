@@ -1,16 +1,13 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useQuery, useMutation, useQueryClient } from 'react-query';
 import {
   CogIcon,
   BellIcon,
   ShieldCheckIcon,
-  KeyIcon,
   CircleStackIcon,
   CloudIcon,
-  UserGroupIcon,
   DocumentTextIcon,
-  ExclamationTriangleIcon,
   CheckCircleIcon,
 } from '@heroicons/react/24/outline';
 import LoadingSpinner from '../components/LoadingSpinner';

@@ -55,7 +55,6 @@ const ChatInterface: React.FC = () => {
     setIsLoading(true);
 
     try {
-      const token = localStorage.getItem('token');
       const response = await fetch('/api/v1/chat', {
         method: 'POST',
         headers: {

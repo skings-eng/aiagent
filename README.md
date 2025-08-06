@@ -36,11 +36,14 @@
 
 ```
 aiagent/
-├── frontend/b-end/          # React前端应用
+├── frontend/
+│   ├── b-end/               # React管理端前端应用
+│   └── c-end/               # React客户端前端应用
 ├── backend/
 │   ├── api/                 # 主API服务
 │   │   └── mcp-yfinance-server/  # MCP股票服务器
-│   └── line/                # LINE Bot服务
+│   ├── line/                # LINE Bot服务
+│   └── mcp/                 # MCP服务模块
 ├── shared/                  # 共享类型和工具
 ├── ecosystem.config.js      # PM2配置文件
 ├── start-services.sh        # 一键启动脚本
@@ -484,6 +487,14 @@ npm cache clean --force
 3. 创建新的问题报告并详细描述您遇到的问题
 
 ## 版本更新日志
+
+### v1.0.2 (2025年1月6日)
+- 🔧 修复c-end模块TypeScript构建错误
+- 📦 优化项目结构，支持双前端架构
+- 🛠️ 修复tsconfig.json重复配置问题
+- 🧹 清理未使用的导入和变量
+- ✅ 解决React Query类型兼容性问题
+- 📝 更新项目结构文档
 
 ### v1.0.1 (2025年1月6日)
 - 🐛 修复前端服务启动问题

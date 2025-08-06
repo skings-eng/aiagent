@@ -108,15 +108,7 @@ const AIModels: React.FC = () => {
     }
   };
 
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('ja-JP', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    });
-  };
+
 
   if (isLoading) {
     return (
@@ -217,7 +209,7 @@ const AIModels: React.FC = () => {
           </div>
 
           {/* Error Messages */}
-          {testConnectionMutation.error && (
+          {testConnectionMutation.error ? (
             <div className="p-3 bg-red-50 border border-red-200 rounded-md">
               <div className="flex items-center gap-2">
                 <XCircleIcon className="h-4 w-4 text-red-500" />
@@ -226,7 +218,7 @@ const AIModels: React.FC = () => {
                 </span>
               </div>
             </div>
-          )}
+          ) : null}
 
           {/* Success Messages */}
           {testConnectionMutation.isSuccess && (

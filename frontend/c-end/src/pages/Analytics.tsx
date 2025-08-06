@@ -2,10 +2,7 @@ import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useQuery } from 'react-query';
 import {
-  ChartBarIcon,
   ArrowUpIcon,
-  ArrowDownIcon,
-  CalendarIcon,
   DocumentChartBarIcon,
 } from '@heroicons/react/24/outline';
 import {
@@ -227,7 +224,7 @@ const Analytics: React.FC = () => {
                 fill="#8884d8"
                 dataKey="usage"
               >
-                {analytics.promptCategories.map((entry, index) => (
+                {analytics.promptCategories.map((_entry, index) => (
                   <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                 ))}
               </Pie>

@@ -1,6 +1,4 @@
 import { useState, useEffect, createContext, useContext } from 'react';
-import { useQuery, useMutation, useQueryClient } from 'react-query';
-import axios from 'axios';
 
 // C-end uses simple local authentication for Gemini client
 // No backend API needed for authentication
@@ -21,10 +19,7 @@ interface AuthContextType {
   logout: () => void;
 }
 
-interface LoginCredentials {
-  email: string;
-  password: string;
-}
+
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 

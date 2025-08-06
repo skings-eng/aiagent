@@ -5,7 +5,6 @@ import {
   Bars3Icon,
   XMarkIcon,
   HomeIcon,
-  UsersIcon,
   CpuChipIcon,
   DocumentTextIcon,
   ChartBarIcon,
