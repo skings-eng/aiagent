@@ -50,22 +50,104 @@ aiagent/
 
 ## 快速开始
 
-### 🎯 新手用户（推荐）
+### 💻 Ubuntu从GitHub部署方案
 
-如果你是新手，建议使用我们的简化部署指南：
+#### 前置要求
 
-📖 **[5分钟快速部署指南](QUICK_START.md)** - 专为新手准备的超简单部署教程
+确保你的Ubuntu系统已安装以下软件：
 
-### 开发环境搭建
+```bash
+# 更新系统包
+sudo apt update && sudo apt upgrade -y
+
+# 安装Node.js 18+
+curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
+sudo apt-get install -y nodejs
+
+# 安装Python3和pip
+sudo apt install -y python3 python3-pip
+
+# 安装PM2进程管理器
+sudo npm install -g pm2
+
+# 安装Git
+sudo apt install -y git
+```
+
+#### 部署步骤
 
 1. **克隆项目**
    ```bash
-   git clone <仓库地址>
+   # 克隆GitHub仓库
+   git clone https://github.com/skings-eng/aiagent.git
    cd aiagent
    ```
 
 2. **安装依赖**
    ```bash
+   # 给脚本执行权限
+   chmod +x install.sh start-services.sh stop-services.sh
+   
+   # 运行安装脚本
+   ./install.sh
+   ```
+
+3. **配置环境变量**
+   ```bash
+   # 配置API服务环境变量
+   cp backend/api/.env.example backend/api/.env
+   nano backend/api/.env  # 编辑并填入你的API密钥
+   
+   # 配置LINE Bot环境变量（可选）
+   cp backend/line/.env.example backend/line/.env
+   nano backend/line/.env  # 编辑并填入LINE相关配置
+   ```
+
+4. **启动服务**
+   ```bash
+   # 使用一键启动脚本
+   ./start-services.sh
+   
+   # 或使用PM2直接启动
+   pm2 start ecosystem.config.js
+   ```
+
+5. **验证部署**
+   ```bash
+   # 检查服务状态
+   pm2 status
+   
+   # 查看日志
+   pm2 logs
+   
+   # 访问应用
+   curl http://localhost:3000
+   ```
+
+6. **设置开机自启（可选）**
+   ```bash
+   # 保存PM2进程列表
+   pm2 save
+   
+   # 设置PM2开机自启
+   pm2 startup
+   sudo env PATH=$PATH:/usr/bin /usr/lib/node_modules/pm2/bin/pm2 startup systemd -u $USER --hp $HOME
+   ```
+
+### 开发环境搭建
+
+1. **克隆项目**
+   ```bash
+   git clone https://github.com/你的用户名/aiagent.git
+   cd aiagent
+   ```
+
+2. **安装依赖**
+   ```bash
+   # 使用安装脚本一键安装所有依赖
+   ./install.sh
+   
+   # 或手动安装
    npm install
    cd backend/api && npm install
    cd ../line && npm install
@@ -82,53 +164,97 @@ aiagent/
    cp backend/line/.env.example backend/line/.env
    ```
 
-4. **构建项目**
+4. **启动开发服务器**
    ```bash
-   # 构建共享模块
-   cd shared && npm run build
-   
-   # 构建后端
-   cd ../backend/api && npm run build
-   cd ../line && npm run build
-   
-   # 构建前端
-   cd ../../frontend/b-end && npm run build
-   ```
-
-5. **启动开发服务器**
-   ```bash
-   # 启动前端开发服务器
-   cd frontend/b-end
+   # 使用开发模式启动所有服务
    npm run dev
    
-   # 在新终端启动API服务器
-   cd backend/api
-   npm run dev
+   # 或分别启动各个服务
+   # 前端开发服务器
+   cd frontend/b-end && npm run dev
    
-   # 在新终端启动LINE Bot服务器
-   cd backend/line
-   npm run dev
+   # API服务器
+   cd backend/api && npm run dev
+   
+   # LINE Bot服务器
+   cd backend/line && npm run dev
    ```
 
 ### 生产环境部署
 
-我们提供了多种部署方式：
+#### Ubuntu生产环境部署
 
-- 🚀 **[新手快速部署](QUICK_START.md)** - 5分钟一键部署（推荐新手）
-- 📖 **[详细部署指南](DEPLOYMENT.md)** - 完整的生产环境部署文档
-- 🛠️ **一键安装脚本** - `curl -fsSL https://raw.githubusercontent.com/你的用户名/aiagent/main/install.sh | bash`
-
-#### 快速部署 (Ubuntu系统)
-
-1. **使用一键启动脚本**
+1. **系统优化配置**
    ```bash
-   chmod +x start-services.sh
-   ./start-services.sh
+   # 设置系统限制
+   echo "* soft nofile 65536" | sudo tee -a /etc/security/limits.conf
+   echo "* hard nofile 65536" | sudo tee -a /etc/security/limits.conf
+   
+   # 优化内核参数
+   echo "net.core.somaxconn = 65536" | sudo tee -a /etc/sysctl.conf
+   sudo sysctl -p
    ```
 
-2. **使用PM2生态系统配置**
+2. **配置防火墙**
    ```bash
-   pm2 start ecosystem.config.js
+   # 启用UFW防火墙
+   sudo ufw enable
+   
+   # 开放必要端口
+   sudo ufw allow 22    # SSH
+   sudo ufw allow 80    # HTTP
+   sudo ufw allow 443   # HTTPS
+   sudo ufw allow 3000  # 前端应用
+   sudo ufw allow 3001  # API服务
+   sudo ufw allow 3002  # LINE Bot
+   ```
+
+3. **配置Nginx反向代理（可选）**
+   ```bash
+   # 安装Nginx
+   sudo apt install -y nginx
+   
+   # 创建配置文件
+   sudo nano /etc/nginx/sites-available/aiagent
+   ```
+   
+   Nginx配置示例：
+   ```nginx
+   server {
+       listen 80;
+       server_name your-domain.com;
+       
+       location / {
+           proxy_pass http://localhost:3000;
+           proxy_http_version 1.1;
+           proxy_set_header Upgrade $http_upgrade;
+           proxy_set_header Connection 'upgrade';
+           proxy_set_header Host $host;
+           proxy_cache_bypass $http_upgrade;
+       }
+       
+       location /api {
+           proxy_pass http://localhost:3001;
+           proxy_http_version 1.1;
+           proxy_set_header Host $host;
+       }
+   }
+   ```
+   
+   ```bash
+   # 启用站点
+   sudo ln -s /etc/nginx/sites-available/aiagent /etc/nginx/sites-enabled/
+   sudo nginx -t
+   sudo systemctl restart nginx
+   ```
+
+4. **设置SSL证书（推荐）**
+   ```bash
+   # 安装Certbot
+   sudo apt install -y certbot python3-certbot-nginx
+   
+   # 获取SSL证书
+   sudo certbot --nginx -d your-domain.com
    ```
 
 ## 环境变量配置
@@ -137,7 +263,7 @@ aiagent/
 
 ```env
 # 必需配置
-GEMINI_API_KEY=你的gemini_api密钥
+GOOGLE_AI_API_KEY=你的google_ai_api密钥
 PORT=3001
 NODE_ENV=production
 
@@ -204,7 +330,52 @@ pm2 monit
 
 ## 故障排除
 
-### 常见问题解决
+### Ubuntu部署常见问题
+
+1. **依赖安装失败**
+   ```bash
+   # 更新包管理器
+   sudo apt update
+   
+   # 清理npm缓存
+   npm cache clean --force
+   
+   # 重新安装依赖
+   find . -name "node_modules" -type d -exec rm -rf {} +
+   ./install.sh
+   ```
+
+2. **Python环境问题**
+   ```bash
+   # 检查Python版本
+   python3 --version
+   
+   # 安装Python依赖
+   cd backend/api/mcp-yfinance-server
+   pip3 install -r requirements.txt
+   ```
+
+3. **Git克隆失败**
+   ```bash
+   # 配置Git代理（如果需要）
+   git config --global http.proxy http://proxy-server:port
+   
+   # 或使用SSH克隆
+   git clone git@github.com:你的用户名/aiagent.git
+   ```
+
+4. **服务启动失败**
+   ```bash
+   # 检查系统资源
+   free -h
+   df -h
+   
+   # 重启PM2
+   pm2 kill
+   pm2 start ecosystem.config.js
+   ```
+
+### 通用问题解决
 
 1. **端口冲突**
    ```bash
@@ -232,6 +403,50 @@ pm2 monit
    # 清理缓存
    rm -rf node_modules package-lock.json
    npm install
+   ```
+
+### 🆘 Ubuntu部署快速修复
+
+如果遇到任何问题，可以尝试以下一键修复命令：
+
+```bash
+# 完全重置并重新安装
+cd aiagent
+./stop-services.sh
+find . -name "node_modules" -type d -exec rm -rf {} +
+find . -name "package-lock.json" -delete
+npm cache clean --force
+./install.sh
+./start-services.sh
+```
+
+#### 常见Ubuntu部署问题
+
+1. **权限问题**
+   ```bash
+   # 修复脚本权限
+   chmod +x *.sh
+   
+   # 修复文件所有权
+   sudo chown -R $USER:$USER .
+   ```
+
+2. **端口被占用**
+   ```bash
+   # 查看端口占用
+   sudo netstat -tlnp | grep :3000
+   
+   # 终止占用进程
+   sudo kill -9 <进程ID>
+   ```
+
+3. **内存不足**
+   ```bash
+   # 创建交换文件
+   sudo fallocate -l 2G /swapfile
+   sudo chmod 600 /swapfile
+   sudo mkswap /swapfile
+   sudo swapon /swapfile
    ```
 
 ### 日志文件位置

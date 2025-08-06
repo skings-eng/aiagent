@@ -11,7 +11,8 @@ import routes from './routes';
 import { errorHandler, notFound } from './middleware/errorHandler';
 import { logger } from './utils/logger';
 import { Settings } from './models/Settings';
-import { loadGeminiConfig } from './routes/aiModels';
+import { loadGeminiConfig, geminiConfig } from './routes/aiModels';
+import mongoose from 'mongoose';
 
 // Create Express app
 const app = express();
@@ -211,6 +212,62 @@ process.on('uncaughtException', (err: Error) => {
   process.exit(1);
 });
 
+// Initialize Gemini API key from environment variable
+const initializeGeminiFromEnv = async () => {
+  try {
+    const envApiKey = process.env.GOOGLE_AI_API_KEY;
+    
+    if (!envApiKey) {
+      logger.info('No GOOGLE_AI_API_KEY found in environment variables');
+      return;
+    }
+    
+    // Check if API key already exists in database
+    const existingSetting = await Settings.getByKey('ai', 'gemini_api_key');
+    
+    if (existingSetting && existingSetting.value) {
+      logger.info('Gemini API key already configured in database');
+      return;
+    }
+    
+    // Save environment API key to database
+    const userObjectId = new mongoose.Types.ObjectId();
+    
+    if (existingSetting) {
+      await existingSetting.updateValue(envApiKey, userObjectId, 'API key initialized from environment variable');
+    } else {
+      await Settings.create({
+        category: 'ai',
+        key: 'gemini_api_key',
+        value: envApiKey,
+        type: 'string',
+        description: 'Gemini AI API key for chat functionality',
+        isPublic: false,
+        isEditable: true,
+        metadata: {
+          group: 'gemini',
+          sensitive: true,
+          restartRequired: false,
+        },
+        createdBy: userObjectId,
+        updatedBy: userObjectId,
+      });
+    }
+    
+    // Update in-memory configuration
+    geminiConfig.apiKey = envApiKey;
+    geminiConfig.isConnected = true;
+    geminiConfig.lastTested = new Date().toISOString();
+    
+    logger.info('Gemini API key initialized from environment variable and saved to database');
+    
+  } catch (error) {
+    logger.error('Failed to initialize Gemini API key from environment variable', {
+      error: error instanceof Error ? error.message : 'Unknown error',
+    });
+  }
+};
+
 // Initialize database and start server
 const startServer = async () => {
   try {
@@ -220,6 +277,9 @@ const startServer = async () => {
     
     // Load Gemini configuration from database after MongoDB connection
     await loadGeminiConfig();
+    
+    // Initialize Gemini API key from environment variable if not in database
+    await initializeGeminiFromEnv();
     
     // Connect to Redis
     await connectRedis();

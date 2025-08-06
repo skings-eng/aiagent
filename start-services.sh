@@ -71,7 +71,7 @@ check_env_files() {
     if [ ! -f "backend/api/.env" ]; then
         log_error "缺少后端API环境变量文件: backend/api/.env"
         log_info "请运行: cp backend/api/.env.example backend/api/.env"
-        log_info "然后编辑 backend/api/.env 文件，填写你的 GEMINI_API_KEY"
+        log_info "然后编辑 backend/api/.env 文件，填写你的 GOOGLE_AI_API_KEY"
         exit 1
     fi
     
@@ -83,9 +83,10 @@ check_env_files() {
     fi
     
     # 检查API密钥是否配置
-    if ! grep -q "^GEMINI_API_KEY=.\+" backend/api/.env; then
-        log_error "请在 backend/api/.env 文件中配置你的 GEMINI_API_KEY"
+    if ! grep -q "^GOOGLE_AI_API_KEY=.\+" backend/api/.env; then
+        log_error "请在 backend/api/.env 文件中配置你的 GOOGLE_AI_API_KEY"
         log_info "编辑命令: nano backend/api/.env"
+        log_info "请在 .env 文件中添加: GOOGLE_AI_API_KEY=你的API密钥"
         exit 1
     fi
     
