@@ -35,17 +35,36 @@ echo
 
 # 检查MongoDB服务状态
 log_info "检查MongoDB服务状态..."
-if ! systemctl is-active --quiet mongod; then
-    log_warn "MongoDB服务未运行，正在启动..."
-    sudo systemctl start mongod
-    sleep 3
-fi
 
-if systemctl is-active --quiet mongod; then
-    log_success "MongoDB服务正在运行"
+# 检测操作系统
+if [[ "$OSTYPE" == "darwin"* ]]; then
+    # macOS
+    if ! brew services list | grep mongodb-community | grep -q started; then
+        log_warn "MongoDB服务未运行，正在启动..."
+        brew services start mongodb/brew/mongodb-community
+        sleep 3
+    fi
+    
+    if brew services list | grep mongodb-community | grep -q started; then
+        log_success "MongoDB服务正在运行"
+    else
+        log_error "MongoDB服务启动失败"
+        exit 1
+    fi
 else
-    log_error "MongoDB服务启动失败"
-    exit 1
+    # Ubuntu/Linux
+    if ! systemctl is-active --quiet mongod; then
+        log_warn "MongoDB服务未运行，正在启动..."
+        sudo systemctl start mongod
+        sleep 3
+    fi
+    
+    if systemctl is-active --quiet mongod; then
+        log_success "MongoDB服务正在运行"
+    else
+        log_error "MongoDB服务启动失败"
+        exit 1
+    fi
 fi
 
 # 检查MongoDB连接
@@ -92,6 +111,19 @@ echo
 log_info "📋 数据库信息:"
 echo "  • 数据库名称: japan-stock-ai"
 echo "  • 连接地址: mongodb://localhost:27017/japan-stock-ai"
-echo "  • 服务状态: $(systemctl is-active mongod)"
+
+# 显示服务状态
+if [[ "$OSTYPE" == "darwin"* ]]; then
+    # macOS
+    if brew services list | grep mongodb-community | grep -q started; then
+        echo "  • 服务状态: running (macOS)"
+    else
+        echo "  • 服务状态: stopped (macOS)"
+    fi
+else
+    # Ubuntu/Linux
+    echo "  • 服务状态: $(systemctl is-active mongod) (Ubuntu/Linux)"
+fi
+
 echo
 log_success "🎉 数据库已准备就绪，可以启动应用服务了！"

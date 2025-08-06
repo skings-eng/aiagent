@@ -160,6 +160,8 @@ sudo apt install -y git
    brew services start mongodb/brew/mongodb-community
    
    # 初始化数据库（可选但推荐）
+   # 确保在项目根目录下执行以下命令
+   pwd  # 应该显示 .../aiagent
    chmod +x scripts/init-database.sh
    ./scripts/init-database.sh
    
@@ -508,7 +510,26 @@ pm2 monit
    sudo apt install -y mongodb-org
    ```
 
-6. **数据库连接问题**
+6. **数据库初始化脚本找不到**
+   
+   如果遇到 `chmod: cannot access 'scripts/init-database.sh': No such file or directory` 错误：
+   
+   ```bash
+   # 确认当前目录是项目根目录
+   pwd
+   ls -la  # 应该能看到 scripts/ 目录
+   
+   # 如果不在项目根目录，切换到正确目录
+   cd /path/to/aiagent  # 替换为你的项目路径
+   
+   # 确认scripts目录和文件存在
+   ls -la scripts/
+   
+   # 如果文件不存在，重新克隆项目
+   git pull origin main
+   ```
+
+7. **数据库连接问题**
    
    **Ubuntu/Linux:**
    ```bash
