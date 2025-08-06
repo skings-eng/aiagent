@@ -1,9 +1,32 @@
 #!/bin/bash
 
 # 智能投资助手 - 一键安装脚本
-# 适用于Ubuntu 20.04+
+# 适用于Ubuntu 20.04+ 和 macOS
 
 set -e
+
+# 检测操作系统
+detect_os() {
+    if [[ "$OSTYPE" == "darwin"* ]]; then
+        OS="macos"
+    elif [[ "$OSTYPE" == "linux-gnu"* ]]; then
+        if [ -f /etc/os-release ]; then
+            . /etc/os-release
+            if [[ "$ID" == "ubuntu" ]]; then
+                OS="ubuntu"
+            else
+                OS="linux"
+            fi
+        else
+            OS="linux"
+        fi
+    else
+        OS="unknown"
+    fi
+}
+
+# 调用操作系统检测
+detect_os
 
 # 颜色定义
 RED='\033[0;31m'
@@ -36,30 +59,54 @@ echo
 
 # 检查系统
 log_info "检查系统环境..."
-if [ ! -f /etc/os-release ]; then
-    log_error "无法检测系统版本"
-    exit 1
-fi
-
-source /etc/os-release
-if [[ "$ID" != "ubuntu" ]]; then
-    log_warning "此脚本专为Ubuntu设计，当前系统: $ID"
-    read -p "是否继续安装? (y/N): " -n 1 -r
-    echo
-    if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+case $OS in
+    "macos")
+        log_success "检测到macOS系统"
+        ;;
+    "ubuntu")
+        source /etc/os-release
+        log_success "检测到Ubuntu系统: $PRETTY_NAME"
+        ;;
+    "linux")
+        log_warning "检测到Linux系统，但非Ubuntu"
+        read -p "是否继续安装? (y/N): " -n 1 -r
+        echo
+        if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+            exit 1
+        fi
+        ;;
+    *)
+        log_error "不支持的操作系统: $OSTYPE"
         exit 1
+        ;;
+esac
+
+# 更新系统和安装基础依赖
+if [[ "$OS" == "macos" ]]; then
+    # macOS使用Homebrew
+    if ! command -v brew &> /dev/null; then
+        log_info "安装Homebrew..."
+        /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+        # 添加Homebrew到PATH
+        echo 'eval "$(/opt/homebrew/bin/brew shellenv)"' >> ~/.zprofile
+        eval "$(/opt/homebrew/bin/brew shellenv)"
+    else
+        log_success "Homebrew已安装"
     fi
+    
+    log_info "更新Homebrew..."
+    brew update
+    
+    log_info "安装基础依赖..."
+    brew install curl wget git
+else
+    # Ubuntu/Linux使用apt
+    log_info "更新系统包..."
+    sudo apt update && sudo apt upgrade -y
+    
+    log_info "安装基础依赖..."
+    sudo apt install -y curl wget git build-essential
 fi
-
-log_success "系统检查通过: $PRETTY_NAME"
-
-# 更新系统
-log_info "更新系统包..."
-sudo apt update && sudo apt upgrade -y
-
-# 安装基础依赖
-log_info "安装基础依赖..."
-sudo apt install -y curl wget git build-essential
 
 # 检查并安装Node.js
 if command -v node &> /dev/null; then
@@ -68,13 +115,22 @@ if command -v node &> /dev/null; then
         log_success "Node.js已安装: $(node --version)"
     else
         log_warning "Node.js版本过低，正在升级..."
-        curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
-        sudo apt-get install -y nodejs
+        if [[ "$OS" == "macos" ]]; then
+            brew install node@18
+            brew link node@18 --force
+        else
+            curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
+            sudo apt-get install -y nodejs
+        fi
     fi
 else
     log_info "安装Node.js 18.x..."
-    curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
-    sudo apt-get install -y nodejs
+    if [[ "$OS" == "macos" ]]; then
+        brew install node@18
+    else
+        curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
+        sudo apt-get install -y nodejs
+    fi
 fi
 
 log_success "Node.js安装完成: $(node --version)"
@@ -86,7 +142,11 @@ if command -v python3 &> /dev/null; then
     log_success "Python3已安装: $(python3 --version)"
 else
     log_info "安装Python3..."
-    sudo apt install -y python3 python3-pip python3-venv
+    if [[ "$OS" == "macos" ]]; then
+        brew install python@3.11
+    else
+        sudo apt install -y python3 python3-pip python3-venv
+    fi
 fi
 
 # 安装PM2
@@ -102,21 +162,33 @@ log_info "安装MongoDB数据库..."
 if command -v mongod >/dev/null 2>&1; then
     log_info "MongoDB已安装，跳过安装步骤"
 else
-    # 导入MongoDB公钥
-    curl -fsSL https://www.mongodb.org/static/pgp/server-7.0.asc | sudo gpg -o /usr/share/keyrings/mongodb-server-7.0.gpg --dearmor
-    
-    # 添加MongoDB源
-    echo "deb [ arch=amd64,arm64 signed-by=/usr/share/keyrings/mongodb-server-7.0.gpg ] https://repo.mongodb.org/apt/ubuntu $(lsb_release -cs)/mongodb-org/7.0 multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-7.0.list
-    
-    # 更新包列表
-    sudo apt update
-    
-    # 安装MongoDB
-    sudo apt install -y mongodb-org
-    
-    # 启动MongoDB服务
-    sudo systemctl start mongod
-    sudo systemctl enable mongod
+    if [[ "$OS" == "macos" ]]; then
+        # macOS使用Homebrew安装MongoDB
+        log_info "使用Homebrew安装MongoDB..."
+        brew tap mongodb/brew
+        brew install mongodb-community@7.0
+        
+        # 启动MongoDB服务
+        log_info "启动MongoDB服务..."
+        brew services start mongodb/brew/mongodb-community
+    else
+        # Ubuntu使用apt安装MongoDB
+        # 导入MongoDB公钥
+        curl -fsSL https://www.mongodb.org/static/pgp/server-7.0.asc | sudo gpg -o /usr/share/keyrings/mongodb-server-7.0.gpg --dearmor
+        
+        # 添加MongoDB源
+        echo "deb [ arch=amd64,arm64 signed-by=/usr/share/keyrings/mongodb-server-7.0.gpg ] https://repo.mongodb.org/apt/ubuntu $(lsb_release -cs)/mongodb-org/7.0 multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-7.0.list
+        
+        # 更新包列表
+        sudo apt update
+        
+        # 安装MongoDB
+        sudo apt install -y mongodb-org
+        
+        # 启动MongoDB服务
+        sudo systemctl start mongod
+        sudo systemctl enable mongod
+    fi
     
     log_success "MongoDB安装并启动完成"
 fi
@@ -140,7 +212,11 @@ echo "  ✓ Python3: $(python3 --version)"
 echo "  ✓ PM2: $(pm2 --version)"
 echo "  ✓ Git: $(git --version | head -1)"
 if command -v mongod >/dev/null 2>&1; then
-    echo "  ✓ MongoDB: $(mongod --version | head -1 | awk '{print $3}')"
+    if [[ "$OS" == "macos" ]]; then
+        echo "  ✓ MongoDB: $(mongod --version | head -1 | awk '{print $3}')"
+    else
+        echo "  ✓ MongoDB: $(mongod --version | head -1 | awk '{print $3}')"
+    fi
 else
     echo "  ✗ MongoDB: 未安装"
 fi

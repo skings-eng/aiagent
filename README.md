@@ -76,12 +76,29 @@ sudo apt install -y python3 python3-pip
 sudo npm install -g pm2
 
 # 安装MongoDB 7.0
+
+**Ubuntu/Linux:**
+```bash
 curl -fsSL https://www.mongodb.org/static/pgp/server-7.0.asc | sudo gpg -o /usr/share/keyrings/mongodb-server-7.0.gpg --dearmor
 echo "deb [ arch=amd64,arm64 signed-by=/usr/share/keyrings/mongodb-server-7.0.gpg ] https://repo.mongodb.org/apt/ubuntu $(lsb_release -cs)/mongodb-org/7.0 multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-7.0.list
 sudo apt update
 sudo apt install -y mongodb-org
 sudo systemctl start mongod
 sudo systemctl enable mongod
+```
+
+**macOS:**
+```bash
+# 安装Homebrew（如果未安装）
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+
+# 安装MongoDB
+brew tap mongodb/brew
+brew install mongodb-community@7.0
+
+# 启动MongoDB服务
+brew services start mongodb/brew/mongodb-community
+```
 
 # 安装Git
 sudo apt install -y git
@@ -117,10 +134,16 @@ sudo apt install -y git
 4. **配置数据库和环境变量**
    ```bash
    # 确保MongoDB服务正在运行
+   # Ubuntu/Linux:
    sudo systemctl status mongod
    
    # 如果MongoDB未运行，启动它
+   # Ubuntu/Linux:
    sudo systemctl start mongod
+   
+   # macOS:
+   brew services list | grep mongodb
+   brew services start mongodb/brew/mongodb-community
    
    # 初始化数据库（可选但推荐）
    chmod +x scripts/init-database.sh
@@ -453,6 +476,8 @@ pm2 monit
    ```
 
 5. **数据库连接问题**
+   
+   **Ubuntu/Linux:**
    ```bash
    # 检查MongoDB服务状态
    sudo systemctl status mongod
@@ -471,6 +496,24 @@ pm2 monit
    
    # 重启MongoDB服务
    sudo systemctl restart mongod
+   ```
+   
+   **macOS:**
+   ```bash
+   # 检查MongoDB服务状态
+   brew services list | grep mongodb
+   
+   # 启动MongoDB服务
+   brew services start mongodb/brew/mongodb-community
+   
+   # 检查MongoDB连接
+   mongosh --eval "db.adminCommand('ping')"
+   
+   # 重启MongoDB服务
+   brew services restart mongodb/brew/mongodb-community
+   
+   # 如果仍有问题，检查MongoDB日志
+   tail -f /opt/homebrew/var/log/mongodb/mongo.log
    ```
 
 6. **Git克隆失败**
