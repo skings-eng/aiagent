@@ -79,8 +79,22 @@ sudo npm install -g pm2
 
 **Ubuntu/Linux:**
 ```bash
+# 导入MongoDB公钥
 curl -fsSL https://www.mongodb.org/static/pgp/server-7.0.asc | sudo gpg -o /usr/share/keyrings/mongodb-server-7.0.gpg --dearmor
-echo "deb [ arch=amd64,arm64 signed-by=/usr/share/keyrings/mongodb-server-7.0.gpg ] https://repo.mongodb.org/apt/ubuntu $(lsb_release -cs)/mongodb-org/7.0 multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-7.0.list
+
+# 检测Ubuntu版本
+UBUNTU_CODENAME=$(lsb_release -cs 2>/dev/null || echo "jammy")
+
+# 如果是Ubuntu 24.04 (noble)，使用jammy源作为替代
+if [ "$UBUNTU_CODENAME" = "noble" ]; then
+    echo "检测到Ubuntu 24.04，使用Ubuntu 22.04 (jammy)的MongoDB源"
+    UBUNTU_CODENAME="jammy"
+fi
+
+# 添加MongoDB源
+echo "deb [ arch=amd64,arm64 signed-by=/usr/share/keyrings/mongodb-server-7.0.gpg ] https://repo.mongodb.org/apt/ubuntu $UBUNTU_CODENAME/mongodb-org/7.0 multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-7.0.list
+
+# 更新包列表并安装
 sudo apt update
 sudo apt install -y mongodb-org
 sudo systemctl start mongod
@@ -475,7 +489,26 @@ pm2 monit
    sudo apt install python3.11 python3.11-venv python3.11-dev
    ```
 
-5. **数据库连接问题**
+5. **MongoDB源问题 (Ubuntu 24.04)**
+   
+   如果遇到 `E: The repository 'https://repo.mongodb.org/apt/ubuntu noble/mongodb-org/7.0 Release' does not have a Release file` 错误：
+   
+   ```bash
+   # 删除现有的MongoDB源文件
+   sudo rm -f /etc/apt/sources.list.d/mongodb-org-7.0.list
+   
+   # 重新添加MongoDB公钥
+   curl -fsSL https://www.mongodb.org/static/pgp/server-7.0.asc | sudo gpg -o /usr/share/keyrings/mongodb-server-7.0.gpg --dearmor
+   
+   # 为Ubuntu 24.04使用jammy源
+   echo "deb [ arch=amd64,arm64 signed-by=/usr/share/keyrings/mongodb-server-7.0.gpg ] https://repo.mongodb.org/apt/ubuntu jammy/mongodb-org/7.0 multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-7.0.list
+   
+   # 更新包列表并安装
+   sudo apt update
+   sudo apt install -y mongodb-org
+   ```
+
+6. **数据库连接问题**
    
    **Ubuntu/Linux:**
    ```bash
