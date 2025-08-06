@@ -45,6 +45,8 @@ aiagent/
 │   ├── line/                # LINE Bot服务
 │   └── mcp/                 # MCP服务模块
 ├── shared/                  # 共享类型和工具
+├── scripts/                 # 部署和维护脚本
+│   └── init-database.sh     # 数据库初始化脚本
 ├── ecosystem.config.js      # PM2配置文件
 ├── start-services.sh        # 一键启动脚本
 ├── DEPLOYMENT.md           # 部署文档
@@ -73,6 +75,14 @@ sudo apt install -y python3 python3-pip
 # 安装PM2进程管理器
 sudo npm install -g pm2
 
+# 安装MongoDB 7.0
+curl -fsSL https://www.mongodb.org/static/pgp/server-7.0.asc | sudo gpg -o /usr/share/keyrings/mongodb-server-7.0.gpg --dearmor
+echo "deb [ arch=amd64,arm64 signed-by=/usr/share/keyrings/mongodb-server-7.0.gpg ] https://repo.mongodb.org/apt/ubuntu $(lsb_release -cs)/mongodb-org/7.0 multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-7.0.list
+sudo apt update
+sudo apt install -y mongodb-org
+sudo systemctl start mongod
+sudo systemctl enable mongod
+
 # 安装Git
 sudo apt install -y git
 ```
@@ -86,27 +96,70 @@ sudo apt install -y git
    cd aiagent
    ```
 
-2. **安装依赖**
+2. **安装系统依赖**
    ```bash
    # 给脚本执行权限
    chmod +x install.sh start-services.sh stop-services.sh
    
-   # 运行安装脚本
+   # 运行系统依赖安装脚本
    ./install.sh
    ```
 
-3. **配置环境变量**
+3. **安装项目依赖并构建**
    ```bash
+   # 安装所有项目依赖
+   npm install
+   
+   # 构建项目（必须先构建shared模块）
+   npm run build
+   ```
+
+4. **配置数据库和环境变量**
+   ```bash
+   # 确保MongoDB服务正在运行
+   sudo systemctl status mongod
+   
+   # 如果MongoDB未运行，启动它
+   sudo systemctl start mongod
+   
+   # 初始化数据库（可选但推荐）
+   chmod +x scripts/init-database.sh
+   ./scripts/init-database.sh
+   
    # 配置API服务环境变量
    cp backend/api/.env.example backend/api/.env
-   nano backend/api/.env  # 编辑并填入你的API密钥
+   nano backend/api/.env  # 编辑并填入你的API密钥和数据库配置
    
    # 配置LINE Bot环境变量（可选）
    cp backend/line/.env.example backend/line/.env
    nano backend/line/.env  # 编辑并填入LINE相关配置
    ```
+   
+   **重要的环境变量配置：**
+   - `MONGODB_URI`: MongoDB连接字符串（默认：mongodb://localhost:27017/japan-stock-ai）
+   - `OPENAI_API_KEY`: OpenAI API密钥
+   - `ANTHROPIC_API_KEY`: Anthropic Claude API密钥
+   - `GOOGLE_API_KEY`: Google Gemini API密钥
 
-4. **启动服务**
+   # 进入MCP服务器目录
+cd /path/to/aiagent/backend/api/mcp-yfinance-server
+
+# 删除损坏的虚拟环境
+rm -rf venv
+
+# 重新创建虚拟环境
+python3 -m venv venv
+source venv/bin/activate
+
+# 升级pip并安装依赖
+pip install --upgrade pip
+pip install -e .
+
+# 返回项目根目录并重新启动服务
+cd ../../..
+./start-services.sh
+
+5. **启动服务**
    ```bash
    # 使用一键启动脚本（包含前端服务）
    ./start-services.sh --with-frontend
@@ -118,7 +171,7 @@ sudo apt install -y git
    pm2 start ecosystem.config.js
    ```
 
-5. **验证部署**
+6. **验证部署**
    ```bash
    # 检查服务状态
    pm2 status
@@ -130,7 +183,7 @@ sudo apt install -y git
    curl http://localhost:3000
    ```
 
-6. **设置开机自启（可选）**
+7. **设置开机自启（可选）**
    ```bash
    # 保存PM2进程列表
    pm2 save
@@ -158,6 +211,7 @@ sudo apt install -y git
    cd backend/api && npm install
    cd ../line && npm install
    cd ../../frontend/b-end && npm install
+   cd ../c-end && npm install
    cd ../../shared && npm install
    ```
 
@@ -338,7 +392,23 @@ pm2 monit
 
 ### Ubuntu部署常见问题
 
-1. **依赖安装失败**
+1. **TypeScript编译错误**
+   ```bash
+   # 如果遇到backend/api编译错误，需要先构建shared模块
+   cd /path/to/aiagent
+   
+   # 清理所有构建文件
+   find . -name "dist" -type d -exec rm -rf {} + 2>/dev/null || true
+   find . -name "node_modules" -type d -exec rm -rf {} + 2>/dev/null || true
+   
+   # 重新安装依赖
+   npm install
+   
+   # 按正确顺序构建（shared -> backend -> frontend）
+   npm run build
+   ```
+
+2. **依赖安装失败**
    ```bash
    # 更新包管理器
    sudo apt update
@@ -348,20 +418,62 @@ pm2 monit
    
    # 重新安装依赖
    find . -name "node_modules" -type d -exec rm -rf {} +
-   ./install.sh
+   npm install
    ```
 
-2. **Python环境问题**
+3. **MCP服务器启动错误**
+   ```bash
+   # 错误：venv/bin/activate: No such file or directory
+   cd backend/api/mcp-yfinance-server
+   
+   # 删除损坏的虚拟环境
+   rm -rf venv
+   
+   # 重新创建虚拟环境
+   python3 -m venv venv
+   source venv/bin/activate
+   
+   # 升级pip并安装依赖
+   pip install --upgrade pip
+   pip install -e .
+   
+   # 返回项目根目录并重新启动服务
+   cd ../../..
+   ./start-services.sh
+   ```
+
+4. **Python环境问题**
    ```bash
    # 检查Python版本
    python3 --version
    
-   # 安装Python依赖
-   cd backend/api/mcp-yfinance-server
-   pip3 install -r requirements.txt
+   # 确保Python版本 >= 3.11
+   sudo apt update
+   sudo apt install python3.11 python3.11-venv python3.11-dev
    ```
 
-3. **Git克隆失败**
+5. **数据库连接问题**
+   ```bash
+   # 检查MongoDB服务状态
+   sudo systemctl status mongod
+   
+   # 启动MongoDB服务
+   sudo systemctl start mongod
+   
+   # 设置MongoDB开机自启
+   sudo systemctl enable mongod
+   
+   # 检查MongoDB连接
+   mongosh --eval "db.adminCommand('ping')"
+   
+   # 如果连接失败，检查防火墙设置
+   sudo ufw allow 27017
+   
+   # 重启MongoDB服务
+   sudo systemctl restart mongod
+   ```
+
+6. **Git克隆失败**
    ```bash
    # 配置Git代理（如果需要）
    git config --global http.proxy http://proxy-server:port
@@ -370,7 +482,7 @@ pm2 monit
    git clone git@github.com:你的用户名/aiagent.git
    ```
 
-4. **服务启动失败**
+7. **服务启动失败**
    ```bash
    # 检查系统资源
    free -h

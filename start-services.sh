@@ -159,11 +159,29 @@ start_mcp_server() {
     cd backend/api/mcp-yfinance-server
     
     # 检查虚拟环境
-    if [ ! -d "venv" ]; then
+    if [ ! -d "venv" ] || [ ! -f "venv/bin/activate" ]; then
         log_info "创建Python虚拟环境..."
+        rm -rf venv 2>/dev/null || true
         python3 -m venv venv
-        source venv/bin/activate
-        pip install -r requirements.txt
+        
+        # 激活虚拟环境并安装依赖
+        if [ -f "venv/bin/activate" ]; then
+            source venv/bin/activate
+            # 升级pip
+            pip install --upgrade pip
+            # 安装项目依赖（使用pyproject.toml）
+            if [ -f "pyproject.toml" ]; then
+                pip install -e .
+            elif [ -f "requirements.txt" ]; then
+                pip install -r requirements.txt
+            else
+                log_warning "未找到依赖文件，跳过依赖安装"
+            fi
+        else
+            log_error "虚拟环境创建失败"
+            cd ../../..
+            return 1
+        fi
     else
         source venv/bin/activate
     fi

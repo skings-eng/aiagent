@@ -97,6 +97,30 @@ else
     sudo npm install -g pm2
 fi
 
+# 安装MongoDB
+log_info "安装MongoDB数据库..."
+if command -v mongod >/dev/null 2>&1; then
+    log_info "MongoDB已安装，跳过安装步骤"
+else
+    # 导入MongoDB公钥
+    curl -fsSL https://www.mongodb.org/static/pgp/server-7.0.asc | sudo gpg -o /usr/share/keyrings/mongodb-server-7.0.gpg --dearmor
+    
+    # 添加MongoDB源
+    echo "deb [ arch=amd64,arm64 signed-by=/usr/share/keyrings/mongodb-server-7.0.gpg ] https://repo.mongodb.org/apt/ubuntu $(lsb_release -cs)/mongodb-org/7.0 multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-7.0.list
+    
+    # 更新包列表
+    sudo apt update
+    
+    # 安装MongoDB
+    sudo apt install -y mongodb-org
+    
+    # 启动MongoDB服务
+    sudo systemctl start mongod
+    sudo systemctl enable mongod
+    
+    log_success "MongoDB安装并启动完成"
+fi
+
 # 创建项目目录
 log_info "准备项目目录..."
 if [ ! -d "/opt" ]; then
@@ -115,6 +139,11 @@ echo "  ✓ NPM: $(npm --version)"
 echo "  ✓ Python3: $(python3 --version)"
 echo "  ✓ PM2: $(pm2 --version)"
 echo "  ✓ Git: $(git --version | head -1)"
+if command -v mongod >/dev/null 2>&1; then
+    echo "  ✓ MongoDB: $(mongod --version | head -1 | awk '{print $3}')"
+else
+    echo "  ✗ MongoDB: 未安装"
+fi
 echo
 log_info "🎯 下一步:"
 echo "  1. 克隆项目: git clone <项目地址> /opt/aiagent"
