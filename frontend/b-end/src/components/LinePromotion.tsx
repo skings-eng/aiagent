@@ -8,7 +8,7 @@ interface LinePromotionProps {
   description: string;
 }
 
-const LinePromotion: React.FC<LinePromotionProps> = ({ url, displayText, description }) => {
+const LinePromotion: React.FC<LinePromotionProps> = ({ url, displayText: _displayText, description: _description }) => {
   const { t } = useTranslation();
   
   const handleClick = () => {

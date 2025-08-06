@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Send, Bot, User, TrendingUp, BarChart3, Brain, Eye, Zap, Copy, MessageCircle } from 'lucide-react';
+import { Send, Bot, User, Brain, Copy, MessageCircle } from 'lucide-react';
 import { chatAPI, ChatMessage, LineConfig } from '../../services/api';
 import StockAnalysisCard from '../../components/StockAnalysisCard';
 import LinePromotion from '../../components/LinePromotion';

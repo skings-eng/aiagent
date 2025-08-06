@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Settings, Globe, Bell, User, Shield, Palette, Monitor } from 'lucide-react';
+import { Settings, Globe, Bell, User, Shield, Palette } from 'lucide-react';
 
 const SettingsPage: React.FC = () => {
   const [notifications, setNotifications] = useState({

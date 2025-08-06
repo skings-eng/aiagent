@@ -1,5 +1,5 @@
 import React from 'react';
-import { TrendingUp, TrendingDown, AlertTriangle, Target, BarChart3, DollarSign, Activity, Shield } from 'lucide-react';
+import { TrendingUp, AlertTriangle, Target, BarChart3, DollarSign, Activity, Shield } from 'lucide-react';
 
 interface TechnicalData {
   trend_score: string;

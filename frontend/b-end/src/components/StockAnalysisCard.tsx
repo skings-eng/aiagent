@@ -1,5 +1,5 @@
 import React from 'react';
-import { TrendingUp, TrendingDown, DollarSign, BarChart3, AlertTriangle, Star, Eye, EyeOff, MessageCircle } from 'lucide-react';
+import { TrendingUp, TrendingDown, DollarSign, BarChart3, AlertTriangle, Star, EyeOff, MessageCircle } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
 interface StockData {

@@ -25,7 +25,7 @@ const LineConfigPage: React.FC = () => {
     },
     isActive: true
   });
-  const [isLoading, setIsLoading] = useState(false);
+  const [_isLoading, _setIsLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [saveResult, setSaveResult] = useState<{
     status: 'success' | 'error' | null;
@@ -41,7 +41,7 @@ const LineConfigPage: React.FC = () => {
   }, []);
 
   const loadConfig = async () => {
-    setIsLoading(true);
+    _setIsLoading(true);
     try {
       const response = await fetch('/api/v1/line/config');
       if (response.ok) {
@@ -65,7 +65,7 @@ const LineConfigPage: React.FC = () => {
     } catch (error) {
       console.error('加载配置失败:', error);
     } finally {
-      setIsLoading(false);
+      _setIsLoading(false);
     }
   };
 

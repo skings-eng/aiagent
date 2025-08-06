@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { Search, TrendingUp, TrendingDown, BarChart3, Activity, RefreshCw, Target } from 'lucide-react';

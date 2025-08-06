@@ -84,7 +84,7 @@ router.post('/', async (req: Request, res: Response) => {
     if (config.triggerConditions) responseData.triggerConditions = config.triggerConditions;
     if (typeof config.isActive !== 'undefined') responseData.isActive = config.isActive;
     
-    res.json({
+    return res.json({
       success: true,
       message: 'LINE configuration saved successfully',
       data: responseData
@@ -98,7 +98,7 @@ router.post('/', async (req: Request, res: Response) => {
       error: error instanceof Error ? error.message : 'Unknown error'
     });
     
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: 'Internal server error while saving configuration'
     });
@@ -171,7 +171,7 @@ router.get('/', async (req: Request, res: Response) => {
     responseData.triggerConditions = config.triggerConditions || null;
     responseData.isActive = config.isActive || false;
     
-    res.json({
+    return res.json({
       success: true,
       data: responseData
     });
@@ -184,7 +184,7 @@ router.get('/', async (req: Request, res: Response) => {
       error: error instanceof Error ? error.message : 'Unknown error'
     });
     
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: 'Internal server error while getting configuration'
     });
@@ -200,8 +200,8 @@ router.delete('/', async (req: Request, res: Response) => {
     }
     
     // Clear environment variables (for current session)
-    process.env.LINE_CHANNEL_ACCESS_TOKEN = undefined;
-    process.env.LINE_CHANNEL_SECRET = undefined;
+    process.env.LINE_CHANNEL_ACCESS_TOKEN = '';
+    process.env.LINE_CHANNEL_SECRET = '';
     
     logger.info('LINE configuration deleted successfully', {
       service: 'line-bot-service',

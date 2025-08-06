@@ -105,7 +105,10 @@ sudo apt install -y git
 
 4. **启动服务**
    ```bash
-   # 使用一键启动脚本
+   # 使用一键启动脚本（包含前端服务）
+   ./start-services.sh --with-frontend
+   
+   # 或仅启动后端服务
    ./start-services.sh
    
    # 或使用PM2直接启动
@@ -405,6 +408,19 @@ pm2 monit
    npm install
    ```
 
+5. **前端服务无法访问 (http://localhost:3000)**
+   ```bash
+   # 检查是否使用了正确的启动参数
+   ./start-services.sh --with-frontend
+   
+   # 检查服务状态
+   pm2 status
+   
+   # 如果没有aiagent-frontend服务，重新启动
+   pm2 delete aiagent-frontend 2>/dev/null || true
+   ./start-services.sh --with-frontend
+   ```
+
 ### 🆘 Ubuntu部署快速修复
 
 如果遇到任何问题，可以尝试以下一键修复命令：
@@ -468,6 +484,12 @@ npm cache clean --force
 3. 创建新的问题报告并详细描述您遇到的问题
 
 ## 版本更新日志
+
+### v1.0.1 (2025年1月6日)
+- 🐛 修复前端服务启动问题
+- 📝 更新启动脚本说明文档
+- 🔧 修复TypeScript编译错误
+- ✅ 完善故障排除指南
 
 ### v1.0.0 (2025年1月6日)
 - ✨ 首次正式版本发布

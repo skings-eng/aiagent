@@ -193,7 +193,7 @@ export function isValidFileSize(size: number, maxSize: number): boolean {
  * @param format 期望的格式（可选）
  * @returns 是否有效
  */
-export function isValidDate(dateStr: string, format?: string): boolean {
+export function isValidDate(dateStr: string, _format?: string): boolean {
   const date = new Date(dateStr);
   return !isNaN(date.getTime());
 }
