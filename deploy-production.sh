@@ -85,27 +85,52 @@ log_info "Checking build directories..."
 ls -la backend/api/ | grep dist || log_info "No dist directory in backend/api"
 ls -la backend/line/ | grep dist || log_info "No dist directory in backend/line"
 
-# Verify build output
-log_info "Verifying build output..."
-if [ ! -f "backend/api/dist/server.js" ]; then
+# Verify build outputs
+log_info "Verifying build outputs..."
+
+# Check backend API
+if [[ ! -f "backend/api/dist/server.js" ]]; then
     log_error "Backend API build failed - server.js not found"
-    log_info "Available files in backend/api/dist:"
-    ls -la backend/api/dist/ || log_error "dist directory does not exist"
+    echo "Available files in backend/api/dist:"
+    ls -la backend/api/dist/ 2>/dev/null || echo "Directory does not exist"
+    echo "Checking if backend/api/dist directory exists:"
+    ls -la backend/api/ 2>/dev/null || echo "backend/api directory does not exist"
     exit 1
 fi
 
-if [ ! -f "backend/line/dist/index.js" ]; then
-    log_error "LINE service build failed - index.js not found"
-    log_info "Available files in backend/line/dist:"
-    ls -la backend/line/dist/ || log_error "dist directory does not exist"
+# Check backend LINE
+if [[ ! -f "backend/line/dist/index.js" ]]; then
+    log_error "Backend LINE build failed - index.js not found"
+    echo "Available files in backend/line/dist:"
+    ls -la backend/line/dist/ 2>/dev/null || echo "Directory does not exist"
+    echo "Checking if backend/line/dist directory exists:"
+    ls -la backend/line/ 2>/dev/null || echo "backend/line directory does not exist"
     exit 1
 fi
 
-if [ ! -f "frontend/b-end/dist/index.html" ]; then
+# Check frontend
+if [[ ! -f "frontend/b-end/dist/index.html" ]]; then
     log_error "Frontend build failed - index.html not found"
-    log_info "Available files in frontend/b-end/dist:"
-    ls -la frontend/b-end/dist/ || log_error "dist directory does not exist"
+    echo "Available files in frontend/b-end/dist:"
+    ls -la frontend/b-end/dist/ 2>/dev/null || echo "Directory does not exist"
+    echo "Checking if frontend/b-end/dist directory exists:"
+    ls -la frontend/b-end/ 2>/dev/null || echo "frontend/b-end directory does not exist"
     exit 1
+fi
+
+# Additional verification - check file permissions and absolute paths
+log_info "Additional build verification..."
+echo "Current working directory: $(pwd)"
+echo "Absolute path to API server: $(realpath backend/api/dist/server.js 2>/dev/null || echo 'File not found')"
+echo "Absolute path to LINE server: $(realpath backend/line/dist/index.js 2>/dev/null || echo 'File not found')"
+echo "Absolute path to frontend: $(realpath frontend/b-end/dist/index.html 2>/dev/null || echo 'File not found')"
+
+# Test if files are executable/readable
+if [[ -f "backend/api/dist/server.js" ]]; then
+    echo "API server.js permissions: $(ls -l backend/api/dist/server.js)"
+fi
+if [[ -f "backend/line/dist/index.js" ]]; then
+    echo "LINE index.js permissions: $(ls -l backend/line/dist/index.js)"
 fi
 
 log_info "Build verification completed successfully"
@@ -193,7 +218,7 @@ module.exports = {
       name: 'aiagent-frontend',
       script: 'npm',
       args: 'run preview',
-      cwd: './frontend/b-end',
+      cwd: '${PROJECT_DIR}/frontend/b-end',
       env: {
         NODE_ENV: 'production',
         PORT: ${FRONTEND_PORT},
@@ -233,6 +258,42 @@ module.exports = {
   ]
 };
 EOF
+
+# Final verification before PM2 startup
+log_info "Final verification before PM2 startup..."
+echo "PM2 will use the following paths:"
+echo "API script: ${PROJECT_DIR}/backend/api/dist/server.js"
+echo "LINE script: ${PROJECT_DIR}/backend/line/dist/index.js"
+echo "Frontend working directory: ${PROJECT_DIR}/frontend/b-end"
+
+# Verify absolute paths that PM2 will use
+if [[ ! -f "${PROJECT_DIR}/backend/api/dist/server.js" ]]; then
+    log_error "PM2 startup will fail - API script not found at absolute path: ${PROJECT_DIR}/backend/api/dist/server.js"
+    exit 1
+fi
+
+if [[ ! -f "${PROJECT_DIR}/backend/line/dist/index.js" ]]; then
+    log_error "PM2 startup will fail - LINE script not found at absolute path: ${PROJECT_DIR}/backend/line/dist/index.js"
+    exit 1
+fi
+
+if [[ ! -d "${PROJECT_DIR}/frontend/b-end" ]]; then
+    log_error "PM2 startup will fail - Frontend directory not found: ${PROJECT_DIR}/frontend/b-end"
+    exit 1
+fi
+
+if [[ ! -f "${PROJECT_DIR}/frontend/b-end/package.json" ]]; then
+    log_error "PM2 startup will fail - Frontend package.json not found: ${PROJECT_DIR}/frontend/b-end/package.json"
+    exit 1
+fi
+
+# Check if preview script exists in frontend package.json
+if ! grep -q '"preview"' "${PROJECT_DIR}/frontend/b-end/package.json"; then
+    log_error "PM2 startup will fail - 'preview' script not found in frontend/b-end/package.json"
+    exit 1
+fi
+
+log_info "All PM2 paths verified successfully"
 
 # Start services with PM2
 log_info "Starting services with PM2..."
