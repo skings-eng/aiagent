@@ -1,15 +1,15 @@
-# 🤖 AI智能投资助手 - 完整部署指南
+# 🤖 AI智能投资助手 - 生产环境部署指南
 
 一个基于AI的智能投资助手系统，支持股票分析、实时查询、LINE Bot聊天等功能。
 
 ## 🎯 项目简介
 
 本项目是一个完整的AI投资助手系统，包含：
-- **前端界面**: React + Vite + Tailwind CSS (开发: 3000, 生产: 4173)
+- **前端界面**: React + Vite + Tailwind CSS (端口: 4173)
 - **后端API**: Node.js + Express + TypeScript (端口: 3001)
 - **LINE Bot**: LINE机器人服务 (端口: 3003)
 - **MCP服务**: 股票数据服务器 (端口: 3002)
-- **AI服务**: 支持OpenAI、Claude、Gemini（已优化配置）
+- **AI服务**: 支持OpenAI、Claude、Gemini
 - **数据库**: MongoDB + Redis
 - **故障排查工具**: 自动化诊断和修复脚本
 
@@ -21,7 +21,7 @@
 - **网络**: 稳定的互联网连接
 - **域名/IP**: 公网IP地址或域名（用于LINE Bot webhook）
 
-## 🚀 新手小白完整部署指南
+## 🚀 生产环境部署指南
 
 ### 第一步：准备Ubuntu服务器
 
@@ -45,7 +45,7 @@ sudo apt upgrade -y
 sudo apt install -y curl wget git vim htop tree
 ```
 
-### 第二步：从GitHub获取代码
+### 第二步：获取项目代码
 
 #### 2.1 克隆项目代码
 ```bash
@@ -58,21 +58,15 @@ git clone https://github.com/skings-eng/aiagent.git
 # 进入项目目录
 cd aiagent
 
-# 查看项目结构
-tree -L 2
-```
-
-#### 2.2 给脚本添加执行权限
-```bash
-# 给所有脚本添加执行权限
+# 给脚本添加执行权限
 chmod +x *.sh
 ```
 
-### 第三步：一键安装所有依赖
+### 第三步：一键安装依赖
 
 #### 3.1 运行安装脚本
 ```bash
-# 运行Ubuntu安装脚本（这会安装所有需要的软件）
+# 运行Ubuntu安装脚本
 ./install-ubuntu.sh
 ```
 
@@ -122,8 +116,8 @@ REDIS_PORT=6379
 REDIS_PASSWORD=
 
 # CORS配置
-FRONTEND_URL=http://你的服务器IP:3000
-ALLOWED_ORIGINS=http://你的服务器IP:3000,http://localhost:3000,http://localhost:5173
+FRONTEND_URL=http://你的服务器IP:4173
+ALLOWED_ORIGINS=http://你的服务器IP:4173
 
 # JWT配置
 JWT_SECRET=your-super-secret-jwt-key-change-this-in-production-$(date +%s)
@@ -160,7 +154,7 @@ LINE_CHANNEL_SECRET=你的LINE_CHANNEL_SECRET
 
 # CORS配置
 CORS_ORIGIN=http://你的服务器IP:4173
-ALLOWED_ORIGINS=http://你的服务器IP:4173,http://localhost:4173,http://localhost:3000
+ALLOWED_ORIGINS=http://你的服务器IP:4173
 
 # 日志配置
 LOG_LEVEL=info
@@ -175,8 +169,6 @@ VITE_API_BASE_URL=http://你的服务器IP:3001
 VITE_GEMINI_API_KEY=你的Gemini_API密钥
 EOF
 ```
-
-**注意：** 前端目录已从 `b-end` 更新为 `c-end`，配置文件路径相应调整。
 
 **⚠️ 重要提醒：请将上面的 `你的服务器IP` 替换为你的实际服务器IP地址！**
 
@@ -201,7 +193,7 @@ EOF
 3. 获取Channel Access Token和Channel Secret
 4. 设置Webhook URL: `http://你的服务器IP:3003/webhook`
 
-### 第六步：构建和部署项目
+### 第六步：部署项目
 
 #### 6.1 运行生产环境部署脚本
 ```bash
@@ -232,46 +224,9 @@ pm2 status
 # - aiagent-mcp (MCP服务)
 ```
 
-### 第七步：测试服务
+### 第七步：配置防火墙和安全
 
-#### 7.1 测试API服务
-```bash
-# 测试API健康检查
-curl http://localhost:3001/health
-
-# 测试外网访问
-curl http://你的服务器IP:3001/health
-```
-
-#### 7.2 测试前端服务
-```bash
-# 测试前端服务
-curl http://localhost:4173
-
-# 开发环境访问
-# http://localhost:3000
-# 生产环境访问
-# http://你的服务器IP:4173
-```
-
-#### 7.3 测试LINE Bot服务
-```bash
-# 测试LINE Bot健康检查
-curl http://localhost:3003/health
-
-# 测试webhook端点
-curl http://你的服务器IP:3003/webhook
-```
-
-#### 7.4 测试MCP股票服务
-```bash
-# 查看MCP服务日志
-pm2 logs aiagent-mcp
-```
-
-### 第八步：配置防火墙和安全
-
-#### 8.1 配置UFW防火墙
+#### 7.1 配置UFW防火墙
 ```bash
 # 启用防火墙
 sudo ufw enable
@@ -292,7 +247,7 @@ sudo ufw allow 3003  # LINE Bot服务
 sudo ufw status
 ```
 
-#### 8.2 配置云服务商安全组
+#### 7.2 配置云服务商安全组
 如果使用阿里云、腾讯云、AWS等云服务，还需要在控制台配置安全组：
 - 开放端口：22 (SSH), 80 (HTTP), 443 (HTTPS), 3001, 4173, 3003
 - 允许来源：0.0.0.0/0 (所有IP)
@@ -350,60 +305,20 @@ pm2 restart aiagent-line
 pm2 restart aiagent-mcp
 ```
 
-### 停止服务
+### 停止和删除服务
 ```bash
 # 停止所有服务
 pm2 stop all
 
-# 停止特定服务
-pm2 stop aiagent-api
-```
-
-### 删除服务
-```bash
 # 删除所有服务
 pm2 delete all
-
-# 删除特定服务
-pm2 delete aiagent-api
 ```
 
 ## 🛠️ 故障排除
 
-### 🌐 CORS跨域配置问题
+### 🚨 Gemini API Key配置问题
 
-如果前端无法访问后端API，可能是CORS配置问题：
-
-#### 端口配置说明
-- **开发环境**: 前端运行在 `3000` 端口，后端API在 `8001` 端口
-- **生产环境**: 前端运行在 `4173` 端口，后端API在 `3001` 端口
-
-#### 检查CORS配置
-```bash
-# 检查后端API的CORS配置
-grep -r "FRONTEND_URL\|ALLOWED_ORIGINS" backend/api/.env*
-
-# 确保配置包含正确的端口
-# 开发环境应包含: localhost:3000
-# 生产环境应包含: 你的服务器IP:4173
-```
-
-#### 修复CORS问题
-```bash
-# 编辑后端环境配置
-nano backend/api/.env
-
-# 确保包含以下配置
-FRONTEND_URL=http://你的服务器IP:4173
-ALLOWED_ORIGINS=http://你的服务器IP:4173,http://localhost:4173,http://localhost:3000
-
-# 重启后端服务
-pm2 restart aiagent-api
-```
-
-### 🚨 Gemini API Key配置问题（重要！）
-
-如果遇到Gemini API Key无法保存或测试失败的问题，我们提供了专门的修复工具：
+如果遇到Gemini API Key无法保存或测试失败的问题：
 
 #### 快速修复（推荐）
 ```bash
@@ -423,25 +338,24 @@ node diagnose-gemini-issue.js
 node fix-gemini-config.js
 ```
 
-#### 数据库名称配置问题
-**重要：** 不同环境使用不同的数据库名称：
-- 开发环境：`japan-stock-ai`
-- 官方生产环境：`japan_stock_ai_prod`
-- Ubuntu部署环境：`aiagent_prod`
+### 🌐 CORS跨域配置问题
 
-确保您的 `backend/api/.env` 文件中使用正确的数据库名称：
+如果前端无法访问后端API：
+
 ```bash
-# 检查当前配置
-grep MONGODB_URI backend/api/.env
+# 检查CORS配置
+grep -r "FRONTEND_URL\|ALLOWED_ORIGINS" backend/api/.env*
 
-# 应该显示：
-MONGODB_URI=mongodb://localhost:27017/aiagent_prod
+# 编辑后端环境配置
+nano backend/api/.env
+
+# 确保包含正确配置
+FRONTEND_URL=http://你的服务器IP:4173
+ALLOWED_ORIGINS=http://你的服务器IP:4173
+
+# 重启后端服务
+pm2 restart aiagent-api
 ```
-
-**详细文档：**
-- 数据库配置指南：`DATABASE_CONFIG_GUIDE.md`
-- Gemini配置故障排查：`GEMINI_CONFIG_TROUBLESHOOTING.md`
-- 修复工具使用指南：`GEMINI_FIX_TOOLS.md`
 
 ### 常见问题解决
 
@@ -459,19 +373,7 @@ sudo kill -9 <PID>
 pm2 restart all
 ```
 
-#### 2. 前端无法访问后端API
-```bash
-# 检查API服务状态
-curl http://localhost:3001/health
-
-# 检查防火墙
-sudo ufw status
-
-# 检查环境变量配置
-cat frontend/c-end/.env
-```
-
-#### 3. MongoDB连接失败
+#### 2. MongoDB连接失败
 ```bash
 # 检查MongoDB状态
 sudo systemctl status mongod
@@ -479,29 +381,11 @@ sudo systemctl status mongod
 # 重启MongoDB
 sudo systemctl restart mongod
 
-# 查看MongoDB日志
-sudo journalctl -u mongod
-
 # 测试数据库连接
 node backend/api/test-db-connection.js
 ```
 
-#### 7. Gemini API Key无法保存
-```bash
-# 运行快速修复
-./quick-fix-gemini.sh
-
-# 检查数据库配置
-grep MONGODB_URI backend/api/.env
-
-# 重启服务
-pm2 restart all
-
-# 验证配置
-node backend/api/check_gemini_config.js
-```
-
-#### 4. Redis连接失败
+#### 3. Redis连接失败
 ```bash
 # 检查Redis状态
 sudo systemctl status redis-server
@@ -513,34 +397,7 @@ sudo systemctl restart redis-server
 redis-cli ping
 ```
 
-#### 5. LINE Bot webhook失败
-```bash
-# 检查LINE服务日志
-pm2 logs aiagent-line
-
-# 测试webhook端点
-curl -X POST http://你的服务器IP:3003/webhook \
-  -H "Content-Type: application/json" \
-  -d '{}'
-```
-
-#### 6. MCP服务异常
-```bash
-# 检查MCP服务状态
-pm2 logs aiagent-mcp
-
-# 重启MCP服务
-pm2 restart aiagent-mcp
-
-# 手动测试MCP服务
-cd backend/api/mcp-yfinance-server
-source venv/bin/activate
-python simple_stock_server.py
-```
-
-### 完全重新部署
-如果遇到严重问题，可以完全重新部署：
-
+#### 4. 完全重新部署
 ```bash
 # 停止所有服务
 pm2 delete all
@@ -585,7 +442,7 @@ pm2 show aiagent-api
 
 ## 🔄 更新代码
 
-当GitHub上的代码更新时，可以这样更新服务器上的代码：
+当GitHub上的代码更新时：
 
 ```bash
 # 进入项目目录
@@ -605,6 +462,7 @@ git pull origin main
 3. **定期更新**：定期更新系统和依赖包
 4. **备份数据**：定期备份MongoDB数据
 5. **监控日志**：定期检查服务日志
+6. **限制访问**：配置防火墙和安全组
 
 ## 📚 更多资源
 
