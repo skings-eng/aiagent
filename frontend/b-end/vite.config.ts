@@ -13,10 +13,10 @@ export default defineConfig({
   },
   server: {
     port: 3000,
-    host: true,
+    host: '0.0.0.0', // 允许外网访问
     proxy: {
       '/api': {
-        target: 'http://localhost:8001',
+        target: 'http://localhost:3001', // 修改为正确的API端口
         changeOrigin: true,
         secure: false,
       },

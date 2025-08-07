@@ -25,6 +25,12 @@ const ChatPage: React.FC = () => {
   // 解析AI回复中的JSON股票数据
   const parseStockData = (content: string) => {
     try {
+      // 安全检查：确保content存在且为字符串
+      if (!content || typeof content !== 'string') {
+        console.log('内容为空或不是字符串，跳过解析');
+        return { stockData: null, cleanContent: content || '' };
+      }
+      
       console.log('开始解析股票数据，原始内容:', content);
       
       // 方法1: 查找JSON代码块

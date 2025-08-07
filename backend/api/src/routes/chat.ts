@@ -163,6 +163,15 @@ router.post('/',
       // Check if message contains stock symbol and fetch data before sending to AI
       let enhancedMessage = message;
       
+      // Add safety check for message to prevent undefined errors
+      if (!message || typeof message !== 'string') {
+        logger.error('Invalid message received', { message, type: typeof message });
+        return res.status(400).json({
+          success: false,
+          message: 'Invalid message format'
+        });
+      }
+      
       // Support both US stocks (AAPL, TSLA, etc.) and Japanese stocks (7203.T or 2501)
       const usStockRegex = /\b[A-Z]{1,5}\b/g;
       const jpStockRegex = /\b\d{4}(\.T)?\b/g;

@@ -41,11 +41,12 @@ const ChatInterface: React.FC = () => {
   }, [messages]);
 
   const sendMessage = async () => {
-    if (!input.trim() || isLoading) return;
+    const trimmedInput = input.trim();
+    if (!trimmedInput || isLoading) return;
 
     const userMessage: Message = {
       id: Date.now().toString(),
-      content: input.trim(),
+      content: trimmedInput,
       role: 'user',
       timestamp: new Date()
     };
@@ -55,13 +56,18 @@ const ChatInterface: React.FC = () => {
     setIsLoading(true);
 
     try {
+      // Additional safety check before sending
+      if (!trimmedInput || typeof trimmedInput !== 'string') {
+        throw new Error('無効なメッセージです');
+      }
+
       const response = await fetch('/api/v1/chat', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          message: input.trim(),
+          message: trimmedInput,
           history: messages.slice(-5).map(msg => ({
             role: msg.role,
             content: msg.content

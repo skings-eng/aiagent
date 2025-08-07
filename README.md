@@ -32,6 +32,7 @@ cd aiagent
 chmod +x install-ubuntu.sh
 ./install-ubuntu.sh
 ```
+没有权限的话 直接 bash install-ubuntu.sh
 
 安装脚本会自动完成：
 - ✅ 系统更新和基础软件安装
@@ -404,6 +405,46 @@ pm2 resurrect
 # 或重新启动服务
 ./start-services.sh --with-frontend
 ```
+
+**7. 公网部署访问问题**
+
+如果公网部署后无法访问（如 `http://你的服务器IP:3000` 打不开），请按以下步骤排查：
+
+```bash
+# 1. 运行诊断脚本
+./diagnose.sh
+
+# 2. 运行自动修复脚本
+./fix-deployment.sh
+
+# 3. 手动检查常见问题
+# 检查防火墙
+sudo ufw status
+sudo ufw allow 3000
+sudo ufw allow 3001
+sudo ufw allow 3002
+
+# 检查端口监听
+netstat -tlnp | grep :3000
+netstat -tlnp | grep :3001
+
+# 测试本地连接
+curl http://localhost:3000
+curl http://localhost:3001/health
+
+# 测试外网连接
+curl http://你的服务器IP:3000
+curl http://你的服务器IP:3001/health
+```
+
+**常见公网部署问题：**
+- 端口配置不一致（前端代理 vs 后端API端口）
+- 防火墙未开放相应端口
+- 云服务商安全组未配置
+- 前端host配置不允许外网访问
+- 服务未正确启动或崩溃
+
+**详细故障排除指南**: 查看 `DEPLOYMENT_TROUBLESHOOTING.md` 文件
 
 ### 日志文件位置
 
