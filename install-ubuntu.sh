@@ -307,7 +307,7 @@ install_project_dependencies() {
     cd ../..
     
     # 安装前端依赖
-    log_info "安装前端C端依赖..."
+    log_info "安装前端B端依赖..."
     cd frontend/b-end
     npm install
     npm run build
