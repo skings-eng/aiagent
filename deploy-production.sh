@@ -73,19 +73,78 @@ sudo fuser -k ${API_PORT}/tcp || true
 sudo fuser -k ${FRONTEND_PORT}/tcp || true
 sudo fuser -k ${LINE_PORT}/tcp || true
 
-# Install dependencies
+# Install dependencies for all workspaces
 log_info "Installing dependencies..."
 if ! npm install; then
-    log_error "Failed to install dependencies"
+    log_error "Failed to install root dependencies"
     exit 1
 fi
 
-# Build the application
-log_info "Building application..."
-if ! npm run build; then
-    log_error "Build failed"
+# Install dependencies for each workspace individually
+log_info "Installing backend API dependencies..."
+cd backend/api
+if ! npm install; then
+    log_error "Failed to install backend API dependencies"
     exit 1
 fi
+cd ../..
+
+log_info "Installing backend LINE dependencies..."
+cd backend/line
+if ! npm install; then
+    log_error "Failed to install backend LINE dependencies"
+    exit 1
+fi
+cd ../..
+
+log_info "Installing frontend dependencies..."
+cd frontend/b-end
+if ! npm install; then
+    log_error "Failed to install frontend dependencies"
+    exit 1
+fi
+cd ../..
+
+log_info "Installing shared dependencies..."
+cd shared
+if ! npm install; then
+    log_error "Failed to install shared dependencies"
+    exit 1
+fi
+cd ..
+
+# Build the application
+log_info "Building shared modules..."
+cd shared
+if ! npm run build; then
+    log_error "Shared build failed"
+    exit 1
+fi
+cd ..
+
+log_info "Building backend API..."
+cd backend/api
+if ! npm run build; then
+    log_error "Backend API build failed"
+    exit 1
+fi
+cd ../..
+
+log_info "Building backend LINE..."
+cd backend/line
+if ! npm run build; then
+    log_error "Backend LINE build failed"
+    exit 1
+fi
+cd ../..
+
+log_info "Building frontend..."
+cd frontend/b-end
+if ! npm run build; then
+    log_error "Frontend build failed"
+    exit 1
+fi
+cd ../..
 
 # Additional build verification with detailed logging
 log_info "Checking build directories..."
