@@ -68,11 +68,22 @@ sudo fuser -k ${LINE_PORT}/tcp || true
 
 # Install dependencies
 log_info "Installing dependencies..."
-npm install
+if ! npm install; then
+    log_error "Failed to install dependencies"
+    exit 1
+fi
 
 # Build the application
 log_info "Building application..."
-npm run build
+if ! npm run build; then
+    log_error "Build failed"
+    exit 1
+fi
+
+# Additional build verification with detailed logging
+log_info "Checking build directories..."
+ls -la backend/api/ | grep dist || log_info "No dist directory in backend/api"
+ls -la backend/line/ | grep dist || log_info "No dist directory in backend/line"
 
 # Verify build output
 log_info "Verifying build output..."
