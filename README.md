@@ -5,7 +5,7 @@
 ## 🎯 项目简介
 
 本项目是一个完整的AI投资助手系统，包含：
-- **前端界面**: React + Vite + Tailwind CSS (端口: 4173)
+- **前端界面**: React + Vite + Tailwind CSS (开发: 3000, 生产: 4173)
 - **后端API**: Node.js + Express + TypeScript (端口: 3001)
 - **LINE Bot**: LINE机器人服务 (端口: 3003)
 - **MCP服务**: 股票数据服务器 (端口: 3002)
@@ -122,8 +122,8 @@ REDIS_PORT=6379
 REDIS_PASSWORD=
 
 # CORS配置
-FRONTEND_URL=http://你的服务器IP:4173
-ALLOWED_ORIGINS=http://你的服务器IP:4173,http://localhost:4173
+FRONTEND_URL=http://你的服务器IP:3000
+ALLOWED_ORIGINS=http://你的服务器IP:3000,http://localhost:3000,http://localhost:5173
 
 # JWT配置
 JWT_SECRET=your-super-secret-jwt-key-change-this-in-production-$(date +%s)
@@ -160,7 +160,7 @@ LINE_CHANNEL_SECRET=你的LINE_CHANNEL_SECRET
 
 # CORS配置
 CORS_ORIGIN=http://你的服务器IP:4173
-ALLOWED_ORIGINS=http://你的服务器IP:4173,http://localhost:4173
+ALLOWED_ORIGINS=http://你的服务器IP:4173,http://localhost:4173,http://localhost:3000
 
 # 日志配置
 LOG_LEVEL=info
@@ -248,7 +248,9 @@ curl http://你的服务器IP:3001/health
 # 测试前端服务
 curl http://localhost:4173
 
-# 在浏览器中访问
+# 开发环境访问
+# http://localhost:3000
+# 生产环境访问
 # http://你的服务器IP:4173
 ```
 
@@ -367,6 +369,37 @@ pm2 delete aiagent-api
 ```
 
 ## 🛠️ 故障排除
+
+### 🌐 CORS跨域配置问题
+
+如果前端无法访问后端API，可能是CORS配置问题：
+
+#### 端口配置说明
+- **开发环境**: 前端运行在 `3000` 端口，后端API在 `8001` 端口
+- **生产环境**: 前端运行在 `4173` 端口，后端API在 `3001` 端口
+
+#### 检查CORS配置
+```bash
+# 检查后端API的CORS配置
+grep -r "FRONTEND_URL\|ALLOWED_ORIGINS" backend/api/.env*
+
+# 确保配置包含正确的端口
+# 开发环境应包含: localhost:3000
+# 生产环境应包含: 你的服务器IP:4173
+```
+
+#### 修复CORS问题
+```bash
+# 编辑后端环境配置
+nano backend/api/.env
+
+# 确保包含以下配置
+FRONTEND_URL=http://你的服务器IP:4173
+ALLOWED_ORIGINS=http://你的服务器IP:4173,http://localhost:4173,http://localhost:3000
+
+# 重启后端服务
+pm2 restart aiagent-api
+```
 
 ### 🚨 Gemini API Key配置问题（重要！）
 
