@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { MessageCircle, ExternalLink, Settings, CheckCircle, AlertCircle, Eye } from 'lucide-react';
+import axios from 'axios';
 
 interface LineConfig {
   url: string;
@@ -43,24 +44,22 @@ const LineConfigPage: React.FC = () => {
   const loadConfig = async () => {
     _setIsLoading(true);
     try {
-      const response = await fetch('/api/v1/line/config');
-      if (response.ok) {
-        const result = await response.json();
-        if (result.success && result.data) {
-          // 处理后端返回的数据结构，设置默认值
-          const configData = result.data;
-          setConfig({
-            url: configData.url || '',
-            displayText: configData.displayText || 'LINE友達追加',
-            description: configData.description || 'LINEの公式アカウントを友達追加すると、リアルタイム株価アラート、限定の投資レポート、専門アナリストによる詳細分析をお届けします。',
-            triggerConditions: configData.triggerConditions || {
-              afterMessages: 3,
-              stockAnalysis: true,
-              randomChance: 30
-            },
-            isActive: configData.isActive !== undefined ? configData.isActive : true
-          });
-        }
+      const response = await axios.get('/api/v1/line/config');
+      const result = response.data;
+      if (result.success && result.data) {
+        // 处理后端返回的数据结构，设置默认值
+        const configData = result.data;
+        setConfig({
+          url: configData.url || '',
+          displayText: configData.displayText || 'LINE友達追加',
+          description: configData.description || 'LINEの公式アカウントを友達追加すると、リアルタイム株価アラート、限定の投資レポート、専門アナリストによる詳細分析をお届けします。',
+          triggerConditions: configData.triggerConditions || {
+            afterMessages: 3,
+            stockAnalysis: true,
+            randomChance: 30
+          },
+          isActive: configData.isActive !== undefined ? configData.isActive : true
+        });
       }
     } catch (error) {
       console.error('加载配置失败:', error);
@@ -86,17 +85,10 @@ const LineConfigPage: React.FC = () => {
     setUrlStatus({ status: 'checking', message: '检查中...' });
 
     try {
-      const response = await fetch('/api/v1/line/check-url', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ url }),
-      });
+      const response = await axios.post('/api/v1/line/check-url', { url });
+      const data = response.data;
 
-      const data = await response.json();
-
-      if (response.ok && data.valid) {
+      if (data.valid) {
         setUrlStatus({
           status: 'valid',
           message: 'URL 有效'
@@ -152,30 +144,16 @@ const LineConfigPage: React.FC = () => {
     setSaveResult({ status: null, message: '' });
 
     try {
-      const response = await fetch('/api/v1/line/config', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(config),
+      await axios.post('/api/v1/line/config', config);
+      setSaveResult({
+        status: 'success',
+        message: 'LINE 配置保存成功！'
       });
-
-      if (response.ok) {
-        setSaveResult({
-          status: 'success',
-          message: 'LINE 配置保存成功！'
-        });
-      } else {
-        const data = await response.json();
-        setSaveResult({
-          status: 'error',
-          message: data.error || '保存失败'
-        });
-      }
-    } catch (error) {
+    } catch (error: any) {
+      const errorMessage = error.response?.data?.error || '保存失败，请重试';
       setSaveResult({
         status: 'error',
-        message: '保存失败，请重试'
+        message: errorMessage
       });
     } finally {
       setIsSaving(false);

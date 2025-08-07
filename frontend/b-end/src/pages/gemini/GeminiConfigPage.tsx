@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Key, TestTube, CheckCircle, XCircle, AlertCircle } from 'lucide-react';
+import axios from 'axios';
 
 interface GeminiConfig {
   apiKey: string;
@@ -28,21 +29,14 @@ const GeminiConfigPage: React.FC = () => {
 
   const loadConfig = async () => {
     try {
-      const response = await fetch('http://localhost:8001/api/v1/ai-models/gemini/config', {
-        headers: {
-          'Content-Type': 'application/json',
-        },
+      const response = await axios.get('/api/v1/ai-models/gemini/config');
+      const configData = response.data.data || response.data;
+      setConfig({
+        apiKey: configData.apiKey || '',
+        model: configData.model || 'gemini-2.5-pro',
+        temperature: configData.temperature || 0.7,
+        maxTokens: configData.maxTokens || 4096
       });
-      if (response.ok) {
-        const data = await response.json();
-        const configData = data.data || data;
-        setConfig({
-          apiKey: configData.apiKey || '',
-          model: configData.model || 'gemini-2.5-pro',
-          temperature: configData.temperature || 0.7,
-          maxTokens: configData.maxTokens || 4096
-        });
-      }
     } catch (error) {
       console.error('加载配置失败:', error);
     }
@@ -66,64 +60,33 @@ const GeminiConfigPage: React.FC = () => {
     setTestResult({ status: null, message: '' });
 
     try {
-      const response = await fetch('http://localhost:8001/api/v1/ai-models/gemini/test', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(config),
-      });
-
-      const data = await response.json();
-
-      if (response.ok) {
-        setTestResult({
-          status: 'success',
-          message: '连接测试成功！API密钥有效。'
-        });
-      } else {
-        setTestResult({
-          status: 'error',
-          message: data.error || '连接测试失败'
-        });
-      }
-    } catch (error) {
+      await axios.post('/api/v1/ai-models/gemini/test', config);
       setTestResult({
-        status: 'error',
-        message: '网络错误，请检查网络连接'
+        status: 'success',
+        message: '连接测试成功！API密钥有效。'
       });
-    } finally {
-      setIsLoading(false);
-    }
-  };
+    } catch (error: any) {
+       setTestResult({
+         status: 'error',
+         message: error.response?.data?.message || error.response?.data?.error || '连接测试失败'
+       });
+     } finally {
+       setIsLoading(false);
+     }
+   };
 
   const saveConfig = async () => {
     setIsSaving(true);
     try {
-      const response = await fetch('http://localhost:8001/api/v1/ai-models/gemini/config', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(config),
+      await axios.post('/api/v1/ai-models/gemini/config', config);
+      setTestResult({
+        status: 'success',
+        message: '配置保存成功！'
       });
-
-      if (response.ok) {
-        setTestResult({
-          status: 'success',
-          message: '配置保存成功！'
-        });
-      } else {
-        const data = await response.json();
-        setTestResult({
-          status: 'error',
-          message: data.error || '保存失败'
-        });
-      }
-    } catch (error) {
+    } catch (error: any) {
       setTestResult({
         status: 'error',
-        message: '保存失败，请重试'
+        message: error.response?.data?.message || error.response?.data?.error || '保存失败，请重试'
       });
     } finally {
       setIsSaving(false);

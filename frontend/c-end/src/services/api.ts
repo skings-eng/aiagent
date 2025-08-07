@@ -21,12 +21,12 @@ export interface ChatResponse {
 
 export const chatAPI = {
   sendMessage: async (data: ChatRequest): Promise<ChatResponse> => {
-    const response = await axios.post('/api/chat', data);
+    const response = await axios.post('/api/v1/chat', data);
     return response.data;
   },
 
   getChatHistory: async (): Promise<ChatMessage[]> => {
-    const response = await axios.get('/api/chat/history');
+    const response = await axios.get('/api/v1/chat/history');
     return response.data;
   }
 };

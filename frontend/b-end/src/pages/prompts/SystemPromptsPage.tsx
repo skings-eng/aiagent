@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { FileText, Save, Eye, EyeOff, AlertCircle, CheckCircle, History } from 'lucide-react';
+import axios from 'axios';
 
 interface SystemPrompt {
   _id?: string;
@@ -28,33 +29,23 @@ const SystemPromptsPage: React.FC = () => {
   const loadPrompts = async () => {
     setIsLoading(true);
     try {
-      const response = await fetch('/api/v1/prompts/system', {
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
-      if (response.ok) {
-        const result = await response.json();
-        // 后端返回格式: { success: true, data: systemPrompt }
-        // 需要将单个 prompt 转换为数组格式
-        if (result.success && result.data) {
-          const promptData = {
-            _id: result.data.id,
-            content: result.data.content,
-            rawContent: result.data.content, // 使用 content 作为 rawContent
-            version: 1,
-            isActive: true,
-            createdAt: result.data.lastUpdated || new Date().toISOString()
-          };
-          setPrompts([promptData]);
-          setCurrentPrompt(promptData.content);
-        } else {
-          setPrompts([]);
-        }
+      const response = await axios.get('/api/v1/prompts/system');
+      const result = response.data;
+      // 后端返回格式: { success: true, data: systemPrompt }
+      // 需要将单个 prompt 转换为数组格式
+      if (result.success && result.data) {
+        const promptData = {
+          _id: result.data.id,
+          content: result.data.content,
+          rawContent: result.data.content, // 使用 content 作为 rawContent
+          version: 1,
+          isActive: true,
+          createdAt: result.data.lastUpdated || new Date().toISOString()
+        };
+        setPrompts([promptData]);
+        setCurrentPrompt(promptData.content);
       } else {
-        // 请求失败时设置为空数组
         setPrompts([]);
-        console.error('加载提示词失败: HTTP', response.status);
       }
     } catch (error) {
       console.error('加载提示词失败:', error);
@@ -78,33 +69,19 @@ const SystemPromptsPage: React.FC = () => {
     setSaveResult({ status: null, message: '' });
 
     try {
-      const response = await fetch('/api/v1/prompts/system', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          content: currentPrompt // 发送普通文本，不需要 Base64 编码
-        }),
+      await axios.post('/api/v1/prompts/system', {
+        content: currentPrompt // 发送普通文本，不需要 Base64 编码
       });
 
-      if (response.ok) {
-        setSaveResult({
-          status: 'success',
-          message: '系统提示词保存成功！'
-        });
-        loadPrompts(); // Reload to get updated list
-      } else {
-        const data = await response.json();
-        setSaveResult({
-          status: 'error',
-          message: data.error || '保存失败'
-        });
-      }
-    } catch (error) {
+      setSaveResult({
+        status: 'success',
+        message: '系统提示词保存成功！'
+      });
+      loadPrompts(); // Reload to get updated list
+    } catch (error: any) {
       setSaveResult({
         status: 'error',
-        message: '保存失败，请重试'
+        message: error.response?.data?.error || '保存失败，请重试'
       });
     } finally {
       setIsSaving(false);

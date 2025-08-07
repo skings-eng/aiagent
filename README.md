@@ -37,85 +37,163 @@
 ```
 aiagent/
 ├── frontend/
-│   ├── b-end/               # React管理端前端应用
-│   └── c-end/               # React客户端前端应用
+│   ├── b-end/                    # 后台管理界面 (React + Vite)
+│   └── c-end/                    # 用户前端界面 (React + Vite + Tailwind)
 ├── backend/
-│   ├── api/                 # 主API服务
-│   │   └── mcp-yfinance-server/  # MCP股票服务器
-│   ├── line/                # LINE Bot服务
-│   └── mcp/                 # MCP服务模块
-├── shared/                  # 共享类型和工具
-├── scripts/                 # 部署和维护脚本
-│   └── init-database.sh     # 数据库初始化脚本
-├── ecosystem.config.js      # PM2配置文件
-├── start-services.sh        # 一键启动脚本
-├── DEPLOYMENT.md           # 部署文档
-└── README.md               # 项目说明
+│   ├── api/                      # 主API服务 (Node.js + Express)
+│   │   ├── src/
+│   │   │   ├── config/           # 数据库配置
+│   │   │   │   ├── database.ts   # MongoDB连接配置
+│   │   │   │   └── redis.ts      # Redis连接配置
+│   │   │   ├── routes/           # API路由
+│   │   │   ├── services/         # 业务逻辑
+│   │   │   ├── models/           # 数据模型
+│   │   │   ├── middleware/       # 中间件
+│   │   │   └── utils/            # 工具函数
+│   │   ├── mcp-yfinance-server/  # MCP股票数据服务器 (Python)
+│   │   │   ├── pyproject.toml    # Python依赖配置
+│   │   │   ├── venv/             # Python虚拟环境
+│   │   │   └── *.py              # Python MCP服务器代码
+│   │   ├── .env.example          # API环境变量模板
+│   │   └── package.json          # Node.js依赖
+│   └── line/                     # LINE Bot服务 (Node.js)
+│       ├── src/                  # LINE Bot源码
+│       ├── .env.example          # LINE Bot环境变量模板
+│       └── package.json          # Node.js依赖
+├── shared/                       # 共享类型定义和工具
+│   ├── src/                      # 共享源码
+│   └── package.json              # 共享模块依赖
+├── logs/                         # 日志文件目录
+├── scripts/                      # 部署和维护脚本
+│   └── init-database.sh          # 数据库初始化脚本
+├── ecosystem.config.js           # PM2配置文件
+├── install.sh                    # macOS一键安装脚本
+├── install-ubuntu.sh             # Ubuntu一键安装脚本
+├── start-services.sh             # 服务启动脚本
+├── stop-services.sh              # 服务停止脚本
+├── test-db-connection.js         # 数据库连接测试脚本
+├── package.json                  # 根目录依赖（monorepo配置）
+├── DEPLOYMENT.md                 # 部署文档
+└── README.md                     # 项目说明
 ```
+
+### 核心组件说明
+
+#### 前端组件
+- **C端界面**: 用户交互界面，支持AI聊天、股票查询、数据可视化
+- **B端界面**: 后台管理界面（可选）
+
+#### 后端组件
+- **API服务**: 主要业务逻辑，处理用户请求，集成AI服务
+- **LINE Bot**: LINE平台机器人服务
+- **MCP服务器**: Python股票数据分析服务，提供技术指标计算
+
+#### 数据存储
+- **MongoDB**: 主数据库，存储用户数据、聊天记录、股票信息
+- **Redis**: 缓存数据库，用于会话管理、限流、临时数据存储
+
+#### 开发工具
+- **PM2**: 进程管理器，用于生产环境服务管理
+- **TypeScript**: 类型安全的JavaScript开发
+- **Vite**: 前端构建工具
+- **ESLint**: 代码质量检查
 
 ## 快速开始
 
-### 💻 Ubuntu从GitHub部署方案
+### Ubuntu 一键部署（推荐）
 
 #### 前置要求
+- Ubuntu 20.04+ (支持 Ubuntu 22.04/24.04)
+- 至少 4GB RAM（推荐 8GB+）
+- 至少 20GB 可用磁盘空间
+- 稳定的网络连接
+- sudo 权限
 
-确保你的Ubuntu系统已安装以下软件：
+#### 部署步骤
 
-```bash
-# 更新系统包
-sudo apt update && sudo apt upgrade -y
+1. **克隆项目**
+   ```bash
+   git clone https://github.com/yourusername/japan-stock-ai.git
+   cd japan-stock-ai
+   ```
 
-# 安装Node.js 18+
-curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
-sudo apt-get install -y nodejs
+2. **运行Ubuntu一键安装脚本**
+   ```bash
+   # 给脚本执行权限
+   chmod +x install-ubuntu.sh
+   
+   # 运行安装脚本（需要sudo权限）
+   ./install-ubuntu.sh
+   ```
 
-# 安装Python3和pip
-sudo apt install -y python3 python3-pip
+3. **配置API密钥**
+   ```bash
+   # 编辑后端API配置
+   nano backend/api/.env
+   # 填入: GEMINI_API_KEY, OPENAI_API_KEY 等
+   
+   # 编辑前端配置
+   nano frontend/c-end/.env
+   # 填入: VITE_GEMINI_API_KEY
+   
+   # 编辑LINE Bot配置（可选）
+   nano backend/line/.env
+   # 填入: LINE_CHANNEL_ACCESS_TOKEN, LINE_CHANNEL_SECRET
+   ```
 
-# 安装PM2进程管理器
-sudo npm install -g pm2
+4. **启动所有服务**
+   ```bash
+   # 启动所有服务（包括前端）
+   ./start-services.sh --with-frontend
+   
+   # 或仅启动后端服务
+   ./start-services.sh
+   ```
 
-# 安装MongoDB 7.0
+5. **验证部署**
+   ```bash
+   # 查看服务状态
+   pm2 status
+   
+   # 查看服务日志
+   pm2 logs
+   
+   # 测试API
+   curl http://localhost:8001/health
+   ```
 
-**Ubuntu/Linux:**
-```bash
-# 导入MongoDB公钥
-curl -fsSL https://www.mongodb.org/static/pgp/server-7.0.asc | sudo gpg -o /usr/share/keyrings/mongodb-server-7.0.gpg --dearmor
+### macOS 部署方案
 
-# 检测Ubuntu版本
-UBUNTU_CODENAME=$(lsb_release -cs 2>/dev/null || echo "jammy")
+#### 前置要求
+- macOS 10.15+
+- 至少 4GB RAM
+- 至少 15GB 可用磁盘空间
+- 稳定的网络连接
 
-# 如果是Ubuntu 24.04 (noble)，使用jammy源作为替代
-if [ "$UBUNTU_CODENAME" = "noble" ]; then
-    echo "检测到Ubuntu 24.04，使用Ubuntu 22.04 (jammy)的MongoDB源"
-    UBUNTU_CODENAME="jammy"
-fi
+确保你的macOS系统已安装以下软件：
 
-# 添加MongoDB源
-echo "deb [ arch=amd64,arm64 signed-by=/usr/share/keyrings/mongodb-server-7.0.gpg ] https://repo.mongodb.org/apt/ubuntu $UBUNTU_CODENAME/mongodb-org/7.0 multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-7.0.list
-
-# 更新包列表并安装
-sudo apt update
-sudo apt install -y mongodb-org
-sudo systemctl start mongod
-sudo systemctl enable mongod
-```
-
-**macOS:**
 ```bash
 # 安装Homebrew（如果未安装）
 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
 
-# 安装MongoDB
+# 安装Node.js 18+
+brew install node@18
+
+# 安装Python3和pip
+brew install python@3.11
+
+# 安装PM2进程管理器
+npm install -g pm2
+
+# 安装MongoDB 7.0
 brew tap mongodb/brew
 brew install mongodb-community@7.0
 
 # 启动MongoDB服务
 brew services start mongodb/brew/mongodb-community
-```
 
 # 安装Git
-sudo apt install -y git
+brew install git
 ```
 
 #### 部署步骤
@@ -127,7 +205,7 @@ sudo apt install -y git
    cd aiagent
    ```
 
-2. **安装系统依赖**
+2. **运行macOS安装脚本**
    ```bash
    # 给脚本执行权限
    chmod +x install.sh start-services.sh stop-services.sh
@@ -145,7 +223,20 @@ sudo apt install -y git
    npm run build
    ```
 
-4. **配置数据库和环境变量**
+4. **配置环境变量**
+   ```bash
+   # 复制环境变量模板
+   cp backend/api/.env.example backend/api/.env
+   cp backend/line/.env.example backend/line/.env
+   cp frontend/c-end/.env.example frontend/c-end/.env
+   
+   # 编辑配置文件，填入你的API密钥
+   nano backend/api/.env
+   nano backend/line/.env
+   nano frontend/c-end/.env
+   ```
+
+5. **配置数据库和环境变量**
    ```bash
    # 确保MongoDB服务正在运行
    # Ubuntu/Linux:
@@ -198,7 +289,7 @@ pip install -e .
 cd ../../..
 ./start-services.sh
 
-5. **启动服务**
+6. **启动服务**
    ```bash
    # 使用一键启动脚本（包含前端服务）
    ./start-services.sh --with-frontend
@@ -210,7 +301,7 @@ cd ../../..
    pm2 start ecosystem.config.js
    ```
 
-6. **验证部署**
+7. **验证部署**
    ```bash
    # 检查服务状态
    pm2 status
@@ -218,11 +309,14 @@ cd ../../..
    # 查看日志
    pm2 logs
    
-   # 访问应用
-   curl http://localhost:3000
+   # 测试API服务
+   curl http://localhost:8001/health
+   
+   # 访问前端应用（如果启动了前端服务）
+   open http://localhost:3000
    ```
 
-7. **设置开机自启（可选）**
+8. **设置开机自启（可选）**
    ```bash
    # 保存PM2进程列表
    pm2 save
@@ -231,6 +325,8 @@ cd ../../..
    pm2 startup
    sudo env PATH=$PATH:/usr/bin /usr/lib/node_modules/pm2/bin/pm2 startup systemd -u $USER --hp $HOME
    ```
+
+
 
 ### 开发环境搭建
 
@@ -429,9 +525,113 @@ pm2 monit
 
 ## 故障排除
 
-### Ubuntu部署常见问题
+### Ubuntu 部署常见问题
 
-1. **TypeScript编译错误**
+#### 1. 安装脚本执行失败
+```bash
+# 检查系统版本
+lsb_release -a
+
+# 确保有sudo权限
+sudo whoami
+
+# 检查网络连接
+ping -c 3 google.com
+
+# 重新运行安装脚本
+./install-ubuntu.sh
+```
+
+#### 2. MongoDB 连接失败
+```bash
+# 检查MongoDB服务状态
+sudo systemctl status mongod
+
+# 重启MongoDB服务
+sudo systemctl restart mongod
+
+# 查看MongoDB日志
+sudo journalctl -u mongod -f
+
+# 测试连接
+mongosh --eval "db.adminCommand('ping')"
+```
+
+#### 3. Redis 连接失败
+```bash
+# 检查Redis服务状态
+sudo systemctl status redis-server
+
+# 重启Redis服务
+sudo systemctl restart redis-server
+
+# 测试连接
+redis-cli ping
+```
+
+#### 4. Node.js 版本问题
+```bash
+# 检查Node.js版本
+node --version
+
+# 如果版本过低，重新安装
+curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
+sudo apt-get install -y nodejs
+```
+
+#### 5. Python 版本问题
+```bash
+# 检查Python版本
+python3 --version
+
+# 如果版本过低，安装Python 3.11
+sudo add-apt-repository ppa:deadsnakes/ppa -y
+sudo apt update
+sudo apt install -y python3.11 python3.11-venv python3.11-dev
+```
+
+#### 6. 权限问题
+```bash
+# 修复npm权限
+sudo chown -R $(whoami) ~/.npm
+sudo chown -R $(whoami) /usr/local/lib/node_modules
+
+# 修复项目文件权限
+sudo chown -R $(whoami):$(whoami) .
+```
+
+#### 7. 端口占用
+```bash
+# 查看端口占用
+sudo netstat -tlnp | grep :3000
+sudo netstat -tlnp | grep :8001
+sudo netstat -tlnp | grep :3002
+
+# 杀死占用端口的进程
+sudo kill -9 <PID>
+
+# 或使用fuser
+sudo fuser -k 3000/tcp
+sudo fuser -k 8001/tcp
+```
+
+#### 8. PM2 服务问题
+```bash
+# 查看PM2状态
+pm2 status
+
+# 重启所有服务
+pm2 restart all
+
+# 查看详细日志
+pm2 logs --lines 50
+
+# 重置PM2
+pm2 kill
+pm2 start ecosystem.config.js
+```
+
+#### 9. TypeScript编译错误
    ```bash
    # 如果遇到backend/api编译错误，需要先构建shared模块
    cd /path/to/aiagent
@@ -447,7 +647,7 @@ pm2 monit
    npm run build
    ```
 
-2. **依赖安装失败**
+#### 10. 依赖安装失败
    ```bash
    # 更新包管理器
    sudo apt update
@@ -633,6 +833,36 @@ pm2 monit
    ./start-services.sh --with-frontend
    ```
 
+6. **前端API调用失败**
+   
+   如果前端页面加载数据失败或保存配置失败：
+   
+   **问题症状：**
+   - 系统提示词页面无法加载
+   - Gemini配置页面保存失败
+   - LINE配置页面数据异常
+   - 浏览器控制台显示网络错误
+   
+   **解决方案：**
+   
+   ```bash
+   # 1. 检查API服务状态
+   pm2 status
+   curl http://localhost:8001/health
+   
+   # 2. 检查前端axios配置
+   grep -r "baseURL" frontend/*/src/services/
+   
+   # 3. 重新构建和部署前端
+   cd frontend/b-end
+   npm run build
+   pm2 restart aiagent-frontend
+   
+   # 4. 测试前后端连接
+   curl -X GET http://localhost:8001/api/v1/prompts/system
+   curl -X GET http://localhost:8001/api/v1/ai-models/gemini/config
+   ```
+
 ### 🆘 Ubuntu部署快速修复
 
 如果遇到任何问题，可以尝试以下一键修复命令：
@@ -696,6 +926,13 @@ npm cache clean --force
 3. 创建新的问题报告并详细描述您遇到的问题
 
 ## 版本更新日志
+
+### v1.0.3 (2025年1月6日)
+- 🔧 **重要修复**: 修复前端API调用问题，解决PM2部署时的网络请求错误
+- 🌐 **API优化**: 将所有前端页面的fetch请求统一替换为axios，配置全局baseURL
+- 📋 **功能完善**: 修复系统提示词、Gemini配置、LINE配置页面的数据加载和保存功能
+- 🚀 **部署改进**: 优化生产环境部署流程，确保前后端API通信正常
+- 💡 **代码质量**: 统一前端API调用方式，提高代码可维护性
 
 ### v1.0.2 (2025年1月6日)
 - 🔧 修复c-end模块TypeScript构建错误

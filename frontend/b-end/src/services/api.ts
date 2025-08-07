@@ -1,7 +1,14 @@
 import axios from 'axios';
 
 // Configure axios for B-end (admin panel)
-// Use relative URLs to work with Vite proxy
+// Use absolute URLs for production deployment
+// Check if we're running in a built environment (PM2 serves static files)
+const isBuiltEnvironment = window.location.port === '3000';
+const API_BASE_URL = isBuiltEnvironment
+  ? 'http://localhost:8001' // Development server for API
+  : 'http://localhost:8001'; // Always use development server
+
+axios.defaults.baseURL = API_BASE_URL;
 axios.defaults.withCredentials = true;
 // Set timeout to 60 seconds for AI responses
 axios.defaults.timeout = 60000;
