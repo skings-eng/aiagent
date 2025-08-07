@@ -145,18 +145,34 @@ if ! npm run build; then
 fi
 cd ..
 
-log_info "Building backend API..."
+log_info "Reinstalling backend API dependencies (to ensure shared module linking)..."
 cd backend/api
+npm install
+log_info "Building backend API..."
+echo "Current directory: $(pwd)"
+echo "Node.js version: $(node --version)"
+echo "npm version: $(npm --version)"
+echo "TypeScript version: $(npx tsc --version)"
 if ! npm run build; then
     log_error "Backend API build failed"
+    echo "Checking for TypeScript compilation errors..."
+    npx tsc --noEmit || echo "TypeScript check failed"
     exit 1
 fi
 cd ../..
 
-log_info "Building backend LINE..."
+log_info "Reinstalling backend LINE dependencies (to ensure shared module linking)..."
 cd backend/line
+npm install
+log_info "Building backend LINE..."
+echo "Current directory: $(pwd)"
+echo "Node.js version: $(node --version)"
+echo "npm version: $(npm --version)"
+echo "TypeScript version: $(npx tsc --version)"
 if ! npm run build; then
     log_error "Backend LINE build failed"
+    echo "Checking for TypeScript compilation errors..."
+    npx tsc --noEmit || echo "TypeScript check failed"
     exit 1
 fi
 cd ../..

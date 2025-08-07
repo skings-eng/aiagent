@@ -2,7 +2,7 @@
   "name": "@japan-stock-ai/api",
   "version": "1.0.0",
   "description": "Japan Stock AI - Backend API Service",
-  "main": "dist/index.js",
+  "main": "dist/server.js",
   "scripts": {
     "start": "node dist/server.js",
     "dev": "nodemon src/server.ts",
