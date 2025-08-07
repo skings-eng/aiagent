@@ -74,6 +74,20 @@ npm install
 log_info "Building application..."
 npm run build
 
+# Verify build output
+log_info "Verifying build output..."
+if [ ! -f "backend/api/dist/server.js" ]; then
+    log_error "Backend API build failed - server.js not found"
+    exit 1
+fi
+
+if [ ! -f "backend/line/dist/index.js" ]; then
+    log_error "LINE service build failed - index.js not found"
+    exit 1
+fi
+
+log_info "Build verification completed successfully"
+
 # Create production environment file for backend
 log_info "Creating backend production environment..."
 cat > backend/api/.env.production << EOF
@@ -135,7 +149,7 @@ module.exports = {
   apps: [
     {
       name: 'aiagent-api',
-      script: 'backend/api/dist/server.js',
+      script: '${PROJECT_DIR}/backend/api/dist/server.js',
       cwd: '${PROJECT_DIR}',
       env: {
         NODE_ENV: 'production',
@@ -176,7 +190,7 @@ module.exports = {
     },
     {
       name: 'aiagent-line',
-      script: 'backend/line/dist/index.js',
+      script: '${PROJECT_DIR}/backend/line/dist/index.js',
       cwd: '${PROJECT_DIR}',
       env: {
         NODE_ENV: 'production',
