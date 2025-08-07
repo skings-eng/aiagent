@@ -520,7 +520,7 @@ pm2 start --name "aiagent-line" --cwd backend/line npm -- start
 # 检查是否需要启动前端服务
 if [[ "$1" == "--with-frontend" ]]; then
     log_info "启动前端服务..."
-    pm2 start --name "aiagent-frontend" --cwd frontend/c-end npm -- run preview -- --port 3000 --host 0.0.0.0
+    pm2 start --name "aiagent-frontend" --cwd frontend/b-end npm -- run preview -- --port 3000 --host 0.0.0.0
 fi
 
 # 保存PM2配置

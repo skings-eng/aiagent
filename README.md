@@ -171,7 +171,7 @@ npm run build
 cd ../..
 
 # 安装前端依赖
-cd frontend/c-end
+cd frontend/b-end
 npm install
 npm run build
 cd ../..
@@ -243,7 +243,7 @@ REDIS_URL=redis://localhost:6379
 
 ```bash
 # 创建前端环境配置
-cat > frontend/c-end/.env << EOF
+cat > frontend/b-end/.env << EOF
 VITE_API_BASE_URL=http://localhost:8001
 VITE_GEMINI_API_KEY=your_gemini_api_key_here
 EOF
@@ -271,7 +271,7 @@ pm2 start --name "aiagent-api" --cwd backend/api npm -- start
 pm2 start --name "aiagent-line" --cwd backend/line npm -- start
 
 # 4. 启动前端（可选）
-pm2 start --name "aiagent-frontend" --cwd frontend/c-end npm -- run preview -- --port 3000 --host 0.0.0.0
+pm2 start --name "aiagent-frontend" --cwd frontend/b-end npm -- run preview -- --port 3000 --host 0.0.0.0
 
 # 保存PM2配置
 pm2 save
@@ -390,7 +390,7 @@ pip install -e .
 **5. 前端构建失败**
 ```bash
 # 清理并重新安装
-cd frontend/c-end
+cd frontend/b-end
 rm -rf node_modules package-lock.json
 npm install
 npm run build
