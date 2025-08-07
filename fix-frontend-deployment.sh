@@ -51,10 +51,14 @@ cd frontend/b-end
 if [ ! -f ".env" ]; then
     log_info "创建b-end环境配置文件..."
     cat > .env << EOF
-VITE_API_BASE_URL=http://localhost:8001
+VITE_API_BASE_URL=http://172.237.20.24:8001
 VITE_GEMINI_API_KEY=your_gemini_api_key_here
 EOF
     log_warning "请编辑 frontend/b-end/.env 文件，填入您的Gemini API密钥"
+else
+    log_info "更新现有的.env文件中的API地址..."
+    # 更新API地址为生产环境地址
+    sed -i 's|VITE_API_BASE_URL=.*|VITE_API_BASE_URL=http://172.237.20.24:8001|' .env
 fi
 
 # 安装依赖并构建
@@ -65,6 +69,22 @@ log_info "构建项目..."
 npm run build
 
 cd ../..
+
+# 检查后端API服务状态
+log_info "检查后端API服务状态..."
+if pm2 list | grep -q "aiagent-api.*online"; then
+    log_success "后端API服务正在运行"
+else
+    log_warning "后端API服务未运行，尝试启动..."
+    pm2 start --name "aiagent-api" --cwd backend/api npm -- run start -- --port 8001
+    sleep 3
+    if pm2 list | grep -q "aiagent-api.*online"; then
+        log_success "后端API服务启动成功"
+    else
+        log_error "后端API服务启动失败，请手动检查"
+        log_error "可以运行: pm2 logs aiagent-api 查看错误日志"
+    fi
+fi
 
 # 3. 启动正确的前端服务（b-end）
 log_info "启动b-end前端服务..."
@@ -87,6 +107,14 @@ log_info "  - 包含市场数据、功能介绍等模块"
 log_info "  - 而不是简单的聊天界面"
 log_info ""
 log_warning "如果仍有问题，请检查："
-log_warning "  1. 后端API是否在8001端口正常运行"
-log_warning "  2. 防火墙是否开放3000和8001端口"
-log_warning "  3. frontend/b-end/.env文件配置是否正确"
+log_warning "  1. 后端API是否在8001端口正常运行: curl http://172.237.20.24:8001/api/v1/health"
+log_warning "  2. 防火墙是否开放3000和8001端口: sudo ufw status"
+log_warning "  3. frontend/b-end/.env文件配置是否正确: cat frontend/b-end/.env"
+log_warning "  4. 前端服务日志: pm2 logs aiagent-frontend"
+log_warning "  5. 后端服务日志: pm2 logs aiagent-api"
+log_warning "  6. 网络连接: ping 172.237.20.24"
+log_info ""
+log_info "常见问题解决："
+log_info "  - 如果显示'加载中'：检查API地址和网络连接"
+log_info "  - 如果404错误：确认前端服务正在运行"
+log_info "  - 如果API错误：检查后端服务和数据库连接"
