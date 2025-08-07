@@ -122,7 +122,7 @@ PORT=3001
 SERVER_HOST=0.0.0.0
 
 # 数据库配置
-MONGODB_URI=mongodb://localhost:27017/japan-stock-ai
+MONGODB_URI=mongodb://localhost:27017/aiagent_prod
 REDIS_HOST=localhost
 REDIS_PORT=6379
 
@@ -232,7 +232,7 @@ LOG_LEVEL=info
       require('dotenv').config({ path: 'backend/api/.env' });
       
       const mongoose = require('mongoose');
-      const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/japan-stock-ai';
+      const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/aiagent_prod';
       
       info(`连接数据库: ${MONGODB_URI}`);
       

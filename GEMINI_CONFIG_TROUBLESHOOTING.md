@@ -34,6 +34,11 @@ MONGODB_URI=mongodb://localhost:27017/japan_stock_ai_prod
 GOOGLE_AI_API_KEY=AIzaSyCAWckxmtKkHq4ELpEkvViz4bsLUc2SOHw
 ```
 
+**注意：数据库名称不一致问题**
+- 开发环境使用：`japan-stock-ai`
+- 生产环境使用：`japan_stock_ai_prod`
+- 用户Ubuntu环境使用：`aiagent_prod`
+
 **问题：**
 - Ubuntu环境可能没有正确加载 `.env` 文件
 - 数据库名称不一致（开发环境 vs 生产环境）

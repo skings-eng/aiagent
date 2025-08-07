@@ -248,7 +248,7 @@ class GeminiDiagnostic {
       require('dotenv').config({ path: 'backend/api/.env' });
       
       const mongoose = require('mongoose');
-      const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/japan-stock-ai';
+      const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/aiagent_prod';
       
       info(`连接URI: ${MONGODB_URI}`);
       

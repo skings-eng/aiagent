@@ -97,6 +97,18 @@ node fix-gemini-config.js
 
 ### 常见问题解决
 
+#### 0. 数据库名称不匹配
+**问题：** Ubuntu环境使用 `aiagent_prod`，但代码默认使用 `japan-stock-ai`
+
+**解决方案：**
+```bash
+# 检查当前配置
+grep MONGODB_URI backend/api/.env
+
+# 确保使用正确的数据库名称
+echo "MONGODB_URI=mongodb://localhost:27017/aiagent_prod" >> backend/api/.env
+```
+
 #### 1. MongoDB连接失败
 ```bash
 # 检查MongoDB状态
@@ -152,6 +164,7 @@ source backend/api/.env
 - [ ] 所需端口未被其他进程占用
 - [ ] PM2服务正在运行
 - [ ] 网络连接正常（可以访问Google AI API）
+- [ ] 数据库名称配置正确（详见 `DATABASE_CONFIG_GUIDE.md`）
 
 ## 🆘 获取帮助
 

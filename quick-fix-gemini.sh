@@ -104,7 +104,7 @@ PORT=3001
 SERVER_HOST=0.0.0.0
 
 # 数据库配置
-MONGODB_URI=mongodb://localhost:27017/japan-stock-ai
+MONGODB_URI=mongodb://localhost:27017/aiagent_prod
 REDIS_HOST=localhost
 REDIS_PORT=6379
 
@@ -183,14 +183,14 @@ test_database() {
     log_info "测试数据库连接..."
     
     if command -v mongosh >/dev/null 2>&1; then
-        if mongosh --eval "db.adminCommand('ping')" --quiet japan-stock-ai >/dev/null 2>&1; then
+        if mongosh --eval "db.adminCommand('ping')" --quiet aiagent_prod >/dev/null 2>&1; then
             log_success "MongoDB连接正常"
         else
             log_error "MongoDB连接失败"
             return 1
         fi
     elif command -v mongo >/dev/null 2>&1; then
-        if mongo --eval "db.adminCommand('ping')" --quiet japan-stock-ai >/dev/null 2>&1; then
+        if mongo --eval "db.adminCommand('ping')" --quiet aiagent_prod >/dev/null 2>&1; then
             log_success "MongoDB连接正常"
         else
             log_error "MongoDB连接失败"
