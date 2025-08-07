@@ -45,6 +45,7 @@ const corsOptions = {
     if (!origin) return callback(null, true);
     
     const allowedOrigins = [
+      // Development origins
       'http://localhost:3000',
       'http://localhost:3001',
       'http://localhost:3002',
@@ -57,9 +58,20 @@ const corsOptions = {
       'http://127.0.0.1:3003',
       'http://127.0.0.1:3004',
       'http://127.0.0.1:5173',
-      'http://172.237.20.24:3000', // Production frontend server
-      'http://172.237.20.24:3001', // Alternative frontend port
-      'http://172.237.20.24:3002', // Alternative frontend port
+      // Production origins - Ubuntu server
+      'http://172.237.20.24:3000',
+      'http://172.237.20.24:3001',
+      'http://172.237.20.24:3002',
+      'http://172.237.20.24:5173',
+      'http://172.237.20.24:8080',
+      'http://172.237.20.24:80',
+      // HTTPS versions for production
+      'https://172.237.20.24:3000',
+      'https://172.237.20.24:3001',
+      'https://172.237.20.24:3002',
+      'https://172.237.20.24:5173',
+      'https://172.237.20.24:8080',
+      'https://172.237.20.24:443',
     ];
     
     // Add production origins from environment
@@ -68,8 +80,21 @@ const corsOptions = {
     }
     
     if (process.env.ALLOWED_ORIGINS) {
-      const envOrigins = process.env.ALLOWED_ORIGINS.split(',');
+      const envOrigins = process.env.ALLOWED_ORIGINS.split(',').map(o => o.trim());
       allowedOrigins.push(...envOrigins);
+    }
+    
+    // In production, also allow any origin from the same host
+    if (process.env.NODE_ENV === 'production' && origin) {
+      try {
+        const originUrl = new URL(origin);
+        const serverHost = process.env.SERVER_HOST || '172.237.20.24';
+        if (originUrl.hostname === serverHost || originUrl.hostname === 'localhost' || originUrl.hostname === '127.0.0.1') {
+          return callback(null, true);
+        }
+      } catch (e) {
+        // Invalid URL, continue with normal check
+      }
     }
     
     if (allowedOrigins.includes(origin)) {
@@ -86,8 +111,11 @@ const corsOptions = {
     'X-Requested-With',
     'Content-Type',
     'Accept',
+    'Authorization',
     'Cache-Control',
     'Pragma',
+    'X-Forwarded-For',
+    'X-Real-IP',
   ],
   exposedHeaders: ['X-Total-Count', 'X-Page-Count'],
   maxAge: 86400, // 24 hours

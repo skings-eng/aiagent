@@ -1,0 +1,218 @@
+#!/bin/bash
+
+# Production Deployment Script for Ubuntu Server
+# This script deploys the AI Agent application with only c-end frontend
+
+set -e  # Exit on any error
+
+echo "🚀 Starting production deployment..."
+
+# Configuration
+SERVER_HOST="172.237.20.24"
+FRONTEND_PORT="5173"
+API_PORT="8001"
+PROJECT_DIR="/home/ubuntu/aiagent"
+NODE_ENV="production"
+
+# Colors for output
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+NC='\033[0m' # No Color
+
+log_info() {
+    echo -e "${GREEN}[INFO]${NC} $1"
+}
+
+log_warn() {
+    echo -e "${YELLOW}[WARN]${NC} $1"
+}
+
+log_error() {
+    echo -e "${RED}[ERROR]${NC} $1"
+}
+
+# Check if running on Ubuntu
+if [[ ! -f /etc/lsb-release ]] || ! grep -q "Ubuntu" /etc/lsb-release; then
+    log_error "This script is designed for Ubuntu systems"
+    exit 1
+fi
+
+# Check if Node.js is installed
+if ! command -v node &> /dev/null; then
+    log_error "Node.js is not installed. Please install Node.js 18+ first"
+    exit 1
+fi
+
+# Check if PM2 is installed
+if ! command -v pm2 &> /dev/null; then
+    log_info "Installing PM2..."
+    npm install -g pm2
+fi
+
+# Stop existing services
+log_info "Stopping existing services..."
+pm2 stop aiagent-api || true
+pm2 stop aiagent-frontend || true
+pm2 delete aiagent-api || true
+pm2 delete aiagent-frontend || true
+
+# Kill processes on ports if they exist
+log_info "Cleaning up ports..."
+sudo fuser -k ${API_PORT}/tcp || true
+sudo fuser -k ${FRONTEND_PORT}/tcp || true
+
+# Install dependencies
+log_info "Installing dependencies..."
+npm install
+
+# Build the application
+log_info "Building application..."
+npm run build
+
+# Create production environment file for backend
+log_info "Creating backend production environment..."
+cat > backend/api/.env.production << EOF
+NODE_ENV=production
+PORT=${API_PORT}
+SERVER_HOST=${SERVER_HOST}
+
+# Database Configuration
+MONGODB_URI=mongodb://localhost:27017/aiagent_prod
+REDIS_URL=redis://localhost:6379
+
+# CORS Configuration
+FRONTEND_URL=http://${SERVER_HOST}:${FRONTEND_PORT}
+ALLOWED_ORIGINS=http://${SERVER_HOST}:${FRONTEND_PORT},http://localhost:${FRONTEND_PORT},http://127.0.0.1:${FRONTEND_PORT}
+
+# JWT Configuration
+JWT_SECRET=your-super-secret-jwt-key-change-in-production
+JWT_EXPIRES_IN=7d
+
+# Gemini API Configuration
+GEMINI_API_KEY=your-gemini-api-key
+
+# Logging
+LOG_LEVEL=info
+LOG_FILE=/var/log/aiagent/api.log
+EOF
+
+# Create log directory
+sudo mkdir -p /var/log/aiagent
+sudo chown $USER:$USER /var/log/aiagent
+
+# Create PM2 ecosystem file
+log_info "Creating PM2 ecosystem configuration..."
+cat > ecosystem.config.js << EOF
+module.exports = {
+  apps: [
+    {
+      name: 'aiagent-api',
+      script: 'backend/api/dist/server.js',
+      cwd: '${PROJECT_DIR}',
+      env: {
+        NODE_ENV: 'production',
+        PORT: ${API_PORT}
+      },
+      instances: 1,
+      exec_mode: 'fork',
+      watch: false,
+      max_memory_restart: '1G',
+      error_file: '/var/log/aiagent/api-error.log',
+      out_file: '/var/log/aiagent/api-out.log',
+      log_file: '/var/log/aiagent/api.log',
+      time: true,
+      autorestart: true,
+      max_restarts: 10,
+      min_uptime: '10s'
+    },
+    {
+      name: 'aiagent-frontend',
+      script: 'npm',
+      args: 'run preview',
+      cwd: '${PROJECT_DIR}/frontend/c-end',
+      env: {
+        NODE_ENV: 'production',
+        PORT: ${FRONTEND_PORT},
+        HOST: '0.0.0.0'
+      },
+      instances: 1,
+      exec_mode: 'fork',
+      watch: false,
+      error_file: '/var/log/aiagent/frontend-error.log',
+      out_file: '/var/log/aiagent/frontend-out.log',
+      log_file: '/var/log/aiagent/frontend.log',
+      time: true,
+      autorestart: true,
+      max_restarts: 10,
+      min_uptime: '10s'
+    }
+  ]
+};
+EOF
+
+# Start services with PM2
+log_info "Starting services with PM2..."
+pm2 start ecosystem.config.js
+
+# Save PM2 configuration
+pm2 save
+
+# Setup PM2 startup script
+sudo env PATH=$PATH:/usr/bin pm2 startup systemd -u $USER --hp $HOME
+
+# Configure firewall (if ufw is available)
+if command -v ufw &> /dev/null; then
+    log_info "Configuring firewall..."
+    sudo ufw allow ${API_PORT}/tcp
+    sudo ufw allow ${FRONTEND_PORT}/tcp
+    sudo ufw allow ssh
+fi
+
+# Wait for services to start
+log_info "Waiting for services to start..."
+sleep 10
+
+# Health checks
+log_info "Performing health checks..."
+
+# Check API health
+if curl -f http://localhost:${API_PORT}/api/v1/health > /dev/null 2>&1; then
+    log_info "✅ API service is healthy"
+else
+    log_error "❌ API service health check failed"
+    pm2 logs aiagent-api --lines 20
+fi
+
+# Check frontend
+if curl -f http://localhost:${FRONTEND_PORT} > /dev/null 2>&1; then
+    log_info "✅ Frontend service is healthy"
+else
+    log_error "❌ Frontend service health check failed"
+    pm2 logs aiagent-frontend --lines 20
+fi
+
+# Display service status
+log_info "Service status:"
+pm2 status
+
+log_info "🎉 Deployment completed!"
+log_info "Frontend: http://${SERVER_HOST}:${FRONTEND_PORT}"
+log_info "API: http://${SERVER_HOST}:${API_PORT}"
+log_info "API Health: http://${SERVER_HOST}:${API_PORT}/api/v1/health"
+
+echo ""
+log_info "Useful commands:"
+echo "  pm2 status                 - Check service status"
+echo "  pm2 logs                   - View all logs"
+echo "  pm2 logs aiagent-api       - View API logs"
+echo "  pm2 logs aiagent-frontend  - View frontend logs"
+echo "  pm2 restart all            - Restart all services"
+echo "  pm2 stop all               - Stop all services"
+echo "  pm2 monit                  - Monitor services"
+
+log_warn "Remember to:"
+echo "  1. Update GEMINI_API_KEY in backend/api/.env.production"
+echo "  2. Update JWT_SECRET in backend/api/.env.production"
+echo "  3. Configure MongoDB and Redis if not already done"
+echo "  4. Set up SSL/HTTPS for production use"
