@@ -22,6 +22,9 @@ rm -rf backend/*/dist frontend/*/dist shared/dist
 - ✅ 添加了 Node.js 版本检查
 - ✅ 添加了构建前清理步骤
 - ✅ 修复了 MCP 服务器配置
+- ✅ 修复了 `backend/api/package.json` 中 main 字段指向错误
+- ✅ 增强了 shared 模块依赖链接处理
+- ✅ 添加了详细的构建诊断日志
 
 ## 问题概述
 
@@ -225,7 +228,43 @@ npm install
 npm run build
 ```
 
-### 问题6：PM2配置路径问题
+### 问题6：Shared模块依赖链接问题
+
+```bash
+# 检查shared模块是否正确构建
+ls -la shared/dist/
+
+# 重新构建shared模块
+cd shared
+npm install
+npm run build
+cd ..
+
+# 重新链接依赖并构建后端服务
+cd backend/api
+npm install  # 重新安装以确保shared模块链接
+npm run build
+cd ../..
+
+cd backend/line
+npm install  # 重新安装以确保shared模块链接
+npm run build
+cd ../..
+
+# 验证构建结果
+ls -la backend/api/dist/server.js
+ls -la backend/line/dist/index.js
+
+# 检查package.json中的依赖配置
+grep -r "@japan-stock-ai/shared" backend/*/package.json
+grep -r "file:../../shared" backend/*/package.json
+
+# 检查TypeScript编译错误
+cd backend/api && npx tsc --noEmit
+cd ../line && npx tsc --noEmit
+```
+
+### 问题7：PM2配置路径问题
 
 ```bash
 # 检查PM2配置文件
