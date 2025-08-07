@@ -1,5 +1,28 @@
 # Ubuntu 服务器部署故障排除指南
 
+## 🚨 最新修复 (推荐优先尝试)
+
+如果您遇到 PM2 启动失败或构建问题，请先尝试以下最新修复：
+
+```bash
+# 1. 拉取最新代码（包含最新修复）
+cd /home/ubuntu/aiagent
+git pull origin main
+
+# 2. 完全清理环境
+rm -rf node_modules backend/*/node_modules frontend/*/node_modules shared/node_modules
+rm -rf backend/*/dist frontend/*/dist shared/dist
+
+# 3. 重新部署
+./deploy-production.sh
+```
+
+**最新修复包括：**
+- ✅ 修复了 PM2 配置中的路径问题
+- ✅ 添加了 Node.js 版本检查
+- ✅ 添加了构建前清理步骤
+- ✅ 修复了 MCP 服务器配置
+
 ## 问题概述
 
 如果在Ubuntu服务器上遇到以下PM2错误：
@@ -138,12 +161,17 @@ cd ../../..
 ### 问题1：Node.js版本不兼容
 
 ```bash
-# 检查Node.js版本
-node --version
+# 检查版本
+node --version  # 需要 v18+
+npm --version   # 需要 v8+
 
 # 如果版本低于18，需要升级
 curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
 sudo apt-get install -y nodejs
+
+# 验证安装
+node --version
+npm --version
 ```
 
 ### 问题2：Python3不可用
@@ -176,7 +204,43 @@ sudo fuser -k 8002/tcp
 sudo fuser -k 4173/tcp
 ```
 
-### 问题5：环境变量配置
+### 问题5：构建文件冲突问题
+
+```bash
+# 手动清理旧的构建文件
+rm -rf backend/api/dist
+rm -rf backend/line/dist
+rm -rf frontend/b-end/dist
+rm -rf shared/dist
+
+# 清理node_modules（如果需要）
+rm -rf node_modules
+rm -rf backend/api/node_modules
+rm -rf backend/line/node_modules
+rm -rf frontend/b-end/node_modules
+rm -rf shared/node_modules
+
+# 重新安装和构建
+npm install
+npm run build
+```
+
+### 问题6：PM2配置路径问题
+
+```bash
+# 检查PM2配置文件
+cat ecosystem.config.js
+
+# 验证脚本路径是否正确
+ls -la backend/api/dist/server.js
+ls -la backend/line/dist/index.js
+ls -la backend/api/mcp-yfinance-server/start_mcp.sh
+
+# 确保MCP脚本可执行
+chmod +x backend/api/mcp-yfinance-server/start_mcp.sh
+```
+
+### 问题7：环境变量配置
 
 ```bash
 # 检查环境变量文件
