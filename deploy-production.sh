@@ -45,6 +45,21 @@ if ! command -v node &> /dev/null; then
     exit 1
 fi
 
+# Check Node.js version
+NODE_VERSION=$(node --version | cut -d'v' -f2 | cut -d'.' -f1)
+if [[ $NODE_VERSION -lt 18 ]]; then
+    log_error "Node.js version $NODE_VERSION is not supported. Please install Node.js 18 or higher"
+    exit 1
+fi
+log_info "Node.js version: $(node --version)"
+
+# Check if npm is installed
+if ! command -v npm &> /dev/null; then
+    log_error "npm is not installed. Please install npm"
+    exit 1
+fi
+log_info "npm version: $(npm --version)"
+
 # Check if PM2 is installed
 if ! command -v pm2 &> /dev/null; then
     log_info "Installing PM2..."
@@ -112,6 +127,14 @@ if ! npm install; then
     exit 1
 fi
 cd ..
+
+# Clean previous build files
+log_info "Cleaning previous build files..."
+rm -rf backend/api/dist
+rm -rf backend/line/dist
+rm -rf frontend/b-end/dist
+rm -rf shared/dist
+log_info "Previous build files cleaned"
 
 # Build the application
 log_info "Building shared modules..."

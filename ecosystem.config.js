@@ -66,7 +66,7 @@ module.exports = {
 
     {
       name: 'aiagent-mcp',
-      script: (process.env.PROJECT_ROOT || '/home/ubuntu/aiagent') + '/backend/api/mcp-yfinance-server/start_mcp.sh',
+      script: './backend/api/mcp-yfinance-server/start_mcp.sh',
       cwd: process.env.PROJECT_ROOT || '/home/ubuntu/aiagent',
       instances: 1,
       exec_mode: 'fork',
