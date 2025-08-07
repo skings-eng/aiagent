@@ -10,6 +10,11 @@ yarn-error.log*
 .env.development.local
 .env.test.local
 .env.production.local
+**/.env
+**/.env.local
+**/.env.development.local
+**/.env.test.local
+**/.env.production.local
 
 # Build outputs
 dist/
@@ -88,3 +93,34 @@ ecosystem.config.js
 # Shared build artifacts
 shared/dist/
 shared/tsconfig.tsbuildinfo
+
+# Upload directories
+uploads/
+**/uploads/
+
+# Cache directories
+.cache/
+**/.cache/
+
+# Python virtual environments
+venv/
+**/venv/
+__pycache__/
+**/__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Database files
+*.db
+*.sqlite
+*.sqlite3
+
+# Redis dump files
+dump.rdb
+
+# SSL certificates
+*.pem
+*.key
+*.crt
+*.cert

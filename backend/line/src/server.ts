@@ -11,7 +11,7 @@ import { CacheService } from './config/redis';
 
 // Import routes
 import webhookRoutes from './routes/webhook';
-import healthRoutes from './routes/health';
+import healthRoutes, { injectServices as injectHealthServices } from './routes/health';
 import userRoutes from './routes/user';
 import messageRoutes from './routes/message';
 import configRoutes, { injectServices as injectConfigServices } from './routes/config';
@@ -62,7 +62,69 @@ export function createServer(): express.Application {
   
   // CORS configuration
   const corsOptions = {
-    origin: process.env.CORS_ORIGIN?.split(',') || ['http://localhost:3000', 'http://localhost:3001'],
+    origin: function (origin: string | undefined, callback: Function) {
+      // Allow requests with no origin (like mobile apps or curl requests)
+      if (!origin) return callback(null, true);
+      
+      const allowedOrigins = [
+        // Development origins
+        'http://localhost:3000',
+        'http://localhost:3001',
+        'http://localhost:3002',
+        'http://localhost:4173',
+        'http://localhost:5173',
+        'http://127.0.0.1:3000',
+        'http://127.0.0.1:3001',
+        'http://127.0.0.1:3002',
+        'http://127.0.0.1:4173',
+        'http://127.0.0.1:5173',
+        // Production origins
+        'http://172.237.20.24:3000',
+        'http://172.237.20.24:3001',
+        'http://172.237.20.24:4173',
+        'http://172.237.20.24:5173',
+        'http://172.237.20.24:8080',
+        'http://172.237.20.24:80',
+        // HTTPS versions for production
+        'https://172.237.20.24:3000',
+        'https://172.237.20.24:3001',
+        'https://172.237.20.24:4173',
+        'https://172.237.20.24:5173',
+        'https://172.237.20.24:8080',
+        'https://172.237.20.24:443'
+      ];
+      
+      // Add custom origins from environment
+      if (process.env.CORS_ORIGIN) {
+        const envOrigins = process.env.CORS_ORIGIN.split(',').map(o => o.trim());
+        allowedOrigins.push(...envOrigins);
+      }
+      
+      if (process.env.ALLOWED_ORIGINS) {
+        const envOrigins = process.env.ALLOWED_ORIGINS.split(',').map(o => o.trim());
+        allowedOrigins.push(...envOrigins);
+      }
+      
+      // In production, also allow any origin from the same host
+      if (process.env.NODE_ENV === 'production' && origin) {
+        try {
+          const originUrl = new URL(origin);
+          const serverHost = process.env.SERVER_HOST || '172.237.20.24';
+          if (originUrl.hostname === serverHost || originUrl.hostname === 'localhost' || originUrl.hostname === '127.0.0.1') {
+            return callback(null, true);
+          }
+        } catch (e) {
+          // Invalid URL, continue with normal check
+        }
+      }
+      
+      if (allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        logger.warn('CORS blocked request', { origin, allowedOrigins });
+        callback(new Error('Not allowed by CORS'));
+      }
+    },
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'X-Line-Signature'],
     credentials: true,
@@ -92,13 +154,14 @@ export function createServer(): express.Application {
   // Webhook validation middleware
   app.use('/webhook', validateWebhook);
   
-  // Initialize services for config routes
+  // Initialize services for config and health routes
   try {
     const lineClient = new Client(getLineConfig());
     const cacheService = new CacheService();
     injectConfigServices(lineClient, cacheService);
+    injectHealthServices(lineClient, cacheService);
   } catch (error) {
-    logger.warn('Failed to initialize config services:', error);
+    logger.warn('Failed to initialize services:', error);
   }
   
   // API Routes

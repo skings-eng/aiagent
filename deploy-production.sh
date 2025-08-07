@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Production Deployment Script for Ubuntu Server
-# This script deploys the AI Agent application with only c-end frontend
+# This script deploys the AI Agent application with only b-end frontend
 
 set -e  # Exit on any error
 
@@ -9,8 +9,9 @@ echo "🚀 Starting production deployment..."
 
 # Configuration
 SERVER_HOST="172.237.20.24"
-FRONTEND_PORT="5173"
-API_PORT="8001"
+FRONTEND_PORT="4173"
+API_PORT="3001"
+LINE_PORT="3003"
 PROJECT_DIR="/home/ubuntu/aiagent"
 NODE_ENV="production"
 
@@ -54,13 +55,16 @@ fi
 log_info "Stopping existing services..."
 pm2 stop aiagent-api || true
 pm2 stop aiagent-frontend || true
+pm2 stop aiagent-line || true
 pm2 delete aiagent-api || true
 pm2 delete aiagent-frontend || true
+pm2 delete aiagent-line || true
 
 # Kill processes on ports if they exist
 log_info "Cleaning up ports..."
 sudo fuser -k ${API_PORT}/tcp || true
 sudo fuser -k ${FRONTEND_PORT}/tcp || true
+sudo fuser -k ${LINE_PORT}/tcp || true
 
 # Install dependencies
 log_info "Installing dependencies..."
@@ -97,6 +101,29 @@ LOG_LEVEL=info
 LOG_FILE=/var/log/aiagent/api.log
 EOF
 
+# Create production environment file for LINE service
+log_info "Creating LINE service production environment..."
+cat > backend/line/.env.production << EOF
+NODE_ENV=production
+PORT=${LINE_PORT}
+SERVER_HOST=${SERVER_HOST}
+
+# Redis Configuration
+REDIS_URL=redis://localhost:6379
+
+# LINE Bot Configuration (to be configured after deployment)
+LINE_CHANNEL_ACCESS_TOKEN=your-line-channel-access-token
+LINE_CHANNEL_SECRET=your-line-channel-secret
+
+# CORS Configuration
+CORS_ORIGIN=http://${SERVER_HOST}:${FRONTEND_PORT},http://${SERVER_HOST}:${API_PORT}
+ALLOWED_ORIGINS=http://${SERVER_HOST}:${FRONTEND_PORT},http://${SERVER_HOST}:${API_PORT},http://localhost:${FRONTEND_PORT},http://127.0.0.1:${FRONTEND_PORT}
+
+# Logging
+LOG_LEVEL=info
+LOG_FILE=/var/log/aiagent/line.log
+EOF
+
 # Create log directory
 sudo mkdir -p /var/log/aiagent
 sudo chown $USER:$USER /var/log/aiagent
@@ -130,7 +157,7 @@ module.exports = {
       name: 'aiagent-frontend',
       script: 'npm',
       args: 'run preview',
-      cwd: '${PROJECT_DIR}/frontend/c-end',
+      cwd: '${PROJECT_DIR}/frontend/b-end',
       env: {
         NODE_ENV: 'production',
         PORT: ${FRONTEND_PORT},
@@ -142,6 +169,26 @@ module.exports = {
       error_file: '/var/log/aiagent/frontend-error.log',
       out_file: '/var/log/aiagent/frontend-out.log',
       log_file: '/var/log/aiagent/frontend.log',
+      time: true,
+      autorestart: true,
+      max_restarts: 10,
+      min_uptime: '10s'
+    },
+    {
+      name: 'aiagent-line',
+      script: 'backend/line/dist/index.js',
+      cwd: '${PROJECT_DIR}',
+      env: {
+        NODE_ENV: 'production',
+        PORT: ${LINE_PORT}
+      },
+      instances: 1,
+      exec_mode: 'fork',
+      watch: false,
+      max_memory_restart: '1G',
+      error_file: '/var/log/aiagent/line-error.log',
+      out_file: '/var/log/aiagent/line-out.log',
+      log_file: '/var/log/aiagent/line.log',
       time: true,
       autorestart: true,
       max_restarts: 10,
@@ -166,6 +213,7 @@ if command -v ufw &> /dev/null; then
     log_info "Configuring firewall..."
     sudo ufw allow ${API_PORT}/tcp
     sudo ufw allow ${FRONTEND_PORT}/tcp
+    sudo ufw allow ${LINE_PORT}/tcp
     sudo ufw allow ssh
 fi
 
@@ -192,6 +240,14 @@ else
     pm2 logs aiagent-frontend --lines 20
 fi
 
+# Check LINE service health
+if curl -f http://localhost:${LINE_PORT}/health > /dev/null 2>&1; then
+    log_info "✅ LINE service is healthy"
+else
+    log_error "❌ LINE service health check failed"
+    pm2 logs aiagent-line --lines 20
+fi
+
 # Display service status
 log_info "Service status:"
 pm2 status
@@ -199,7 +255,9 @@ pm2 status
 log_info "🎉 Deployment completed!"
 log_info "Frontend: http://${SERVER_HOST}:${FRONTEND_PORT}"
 log_info "API: http://${SERVER_HOST}:${API_PORT}"
+log_info "LINE Service: http://${SERVER_HOST}:${LINE_PORT}"
 log_info "API Health: http://${SERVER_HOST}:${API_PORT}/api/v1/health"
+log_info "LINE Health: http://${SERVER_HOST}:${LINE_PORT}/health"
 
 echo ""
 log_info "Useful commands:"
@@ -207,6 +265,7 @@ echo "  pm2 status                 - Check service status"
 echo "  pm2 logs                   - View all logs"
 echo "  pm2 logs aiagent-api       - View API logs"
 echo "  pm2 logs aiagent-frontend  - View frontend logs"
+echo "  pm2 logs aiagent-line      - View LINE service logs"
 echo "  pm2 restart all            - Restart all services"
 echo "  pm2 stop all               - Stop all services"
 echo "  pm2 monit                  - Monitor services"

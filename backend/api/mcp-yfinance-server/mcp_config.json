@@ -1,11 +1,8 @@
 {
   "mcpServers": {
     "yfinance": {
-      "command": "python",
-      "args": ["/Users/sking/aiagent/backend/api/mcp-yfinance-server/source/yf_server.py"],
-      "env": {
-        "PYTHONPATH": "/Users/sking/aiagent/backend/api/mcp-yfinance-server/venv/lib/python3.13/site-packages"
-      },
+      "command": "bash",
+      "args": ["/Users/sking/aiagent/backend/api/mcp-yfinance-server/start_mcp.sh"],
       "description": "Yahoo Finance股票数据服务器，提供实时股价、技术指标分析等功能",
       "tools": [
         "get_stock_price",
@@ -24,7 +21,9 @@
         "get_watchlist",
         "get_watchlist_prices",
         "get_realtime_watchlist_prices",
-        "analyze_stock"
+        "analyze_stock",
+        "get_fundamental_data",
+        "get_comprehensive_stock_data"
       ]
     }
   }

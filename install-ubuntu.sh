@@ -308,7 +308,7 @@ install_project_dependencies() {
     
     # 安装前端依赖
     log_info "安装前端C端依赖..."
-    cd frontend/c-end
+    cd frontend/b-end
     npm install
     npm run build
     cd ../..
@@ -360,13 +360,13 @@ setup_environment() {
     fi
     
     # 配置前端环境变量
-    if [[ ! -f "frontend/c-end/.env" ]]; then
+    if [[ ! -f "frontend/b-end/.env" ]]; then
         log_info "创建前端环境配置..."
-        cat > frontend/c-end/.env << EOF
+        cat > frontend/b-end/.env << EOF
 VITE_API_BASE_URL=http://localhost:8001
 VITE_GEMINI_API_KEY=your_gemini_api_key_here
 EOF
-        log_warning "请编辑 frontend/c-end/.env 文件，填入您的Gemini API密钥"
+        log_warning "请编辑 frontend/b-end/.env 文件，填入您的Gemini API密钥"
     else
         log_success "前端环境配置已存在"
     fi
@@ -603,7 +603,7 @@ main() {
         echo
         log_info "🎯 下一步:"
         echo "  1. 编辑API密钥: nano backend/api/.env"
-        echo "  2. 编辑前端配置: nano frontend/c-end/.env"
+        echo "  2. 编辑前端配置: nano frontend/b-end/.env"
         echo "  3. 启动服务: ./start-services.sh --with-frontend"
         echo "  4. 查看状态: pm2 status"
         echo

@@ -195,17 +195,131 @@ router.post('/',
           try {
             logger.info('Attempting to fetch stock data via MCP', { symbol });
             
-            // Call MCP tool to get stock price
-             const stockPriceResult = await mcpStockClient.getStockPrice(symbol);
-             logger.info('MCP stock price result', { symbol, result: stockPriceResult });
-             
-             if (stockPriceResult.success && stockPriceResult.data) {
-               stockDataContext += `\n\n[实时股票数据 - ${symbol}]\n`;
-               stockDataContext += `当前价格: $${stockPriceResult.data}\n`;
-               stockDataContext += `数据来源: MCP yfinance服务器\n`;
-             } else {
-               stockDataContext += `\n\n[股票数据获取失败 - ${symbol}]\n错误: ${stockPriceResult.error || '未知错误'}\n`;
-             }
+            // Determine what type of analysis is requested based on the message content
+            const messageContent = message.toLowerCase();
+            const isRequestingTechnicalAnalysis = 
+              messageContent.includes('技术分析') || 
+              messageContent.includes('技术指标') ||
+              messageContent.includes('移动平均') ||
+              messageContent.includes('rsi') ||
+              messageContent.includes('macd') ||
+              messageContent.includes('布林带') ||
+              messageContent.includes('波动率') ||
+              messageContent.includes('支撑') ||
+              messageContent.includes('阻力') ||
+              messageContent.includes('趋势') ||
+              messageContent.includes('分析') ||
+              messageContent.includes('摘要');
+            
+            logger.info('Technical analysis detection', { 
+              symbol, 
+              messageContent, 
+              isRequestingTechnicalAnalysis 
+            });
+            
+            // Always get basic stock price
+            const stockPriceResult = await mcpStockClient.getStockPrice(symbol);
+            logger.info('MCP stock price result', { symbol, result: stockPriceResult });
+            
+            // Get fundamental data (PE ratio, ROIC, etc.)
+            const fundamentalResult = await mcpStockClient.getFundamentalData(symbol);
+            logger.info('MCP fundamental data result', { symbol, result: fundamentalResult });
+            
+            if (stockPriceResult.success && stockPriceResult.data) {
+              stockDataContext += `\n\n[实时股票数据 - ${symbol}]\n`;
+              stockDataContext += `当前价格: $${stockPriceResult.data}\n`;
+              
+              // Add fundamental data if available
+              if (fundamentalResult.success && fundamentalResult.data) {
+                const fundamental = fundamentalResult.data;
+                stockDataContext += `\n[基本面数据]\n`;
+                if (fundamental.pe_ratio) stockDataContext += `市盈率(PE): ${fundamental.pe_ratio}\n`;
+                if (fundamental.pb_ratio) stockDataContext += `市净率(PB): ${fundamental.pb_ratio}\n`;
+                if (fundamental.dividend_yield) stockDataContext += `股息收益率: ${(fundamental.dividend_yield * 100).toFixed(2)}%\n`;
+                if (fundamental.market_cap) stockDataContext += `市值: $${(fundamental.market_cap / 1e9).toFixed(2)}B\n`;
+                if (fundamental.roic) stockDataContext += `投资回报率(ROIC): ${(fundamental.roic * 100).toFixed(2)}%\n`;
+                if (fundamental.roe) stockDataContext += `净资产收益率(ROE): ${(fundamental.roe * 100).toFixed(2)}%\n`;
+                if (fundamental.debt_to_equity) stockDataContext += `负债权益比: ${fundamental.debt_to_equity}\n`;
+                if (fundamental.current_ratio) stockDataContext += `流动比率: ${fundamental.current_ratio}\n`;
+                if (fundamental.quick_ratio) stockDataContext += `速动比率: ${fundamental.quick_ratio}\n`;
+                if (fundamental.gross_margin) stockDataContext += `毛利率: ${(fundamental.gross_margin * 100).toFixed(2)}%\n`;
+                if (fundamental.operating_margin) stockDataContext += `营业利润率: ${(fundamental.operating_margin * 100).toFixed(2)}%\n`;
+                if (fundamental.profit_margin) stockDataContext += `净利润率: ${(fundamental.profit_margin * 100).toFixed(2)}%\n`;
+                stockDataContext += `数据来源: ${fundamental.data_source || 'Yahoo Finance'}\n`;
+              }
+              
+              // If technical analysis is requested, fetch additional data
+              if (isRequestingTechnicalAnalysis) {
+                try {
+                  // Get technical summary
+                  const technicalResult = await mcpStockClient.getTechnicalSummary(symbol);
+                  if (technicalResult.success && technicalResult.data) {
+                    const tech = technicalResult.data;
+                    stockDataContext += `\n[技术分析数据]\n`;
+                    stockDataContext += `趋势: ${tech.trend || '未知'}\n`;
+                    stockDataContext += `RSI: ${tech.rsi ? tech.rsi.toFixed(2) : '未知'}\n`;
+                    stockDataContext += `MACD信号: ${tech.macd_signal || '未知'}\n`;
+                    stockDataContext += `布林带位置: ${tech.bollinger_position || '未知'}\n`;
+                    
+                    if (tech.moving_averages) {
+                      stockDataContext += `移动平均线:\n`;
+                      if (tech.moving_averages.MA20) {
+                        stockDataContext += `  MA20: $${tech.moving_averages.MA20.current?.toFixed(2) || '未知'}\n`;
+                      }
+                      if (tech.moving_averages.MA50) {
+                        stockDataContext += `  MA50: $${tech.moving_averages.MA50.current?.toFixed(2) || '未知'}\n`;
+                      }
+                    }
+                    
+                    if (tech.price_changes) {
+                      stockDataContext += `价格变化:\n`;
+                      stockDataContext += `  1日: ${tech.price_changes['1d']?.toFixed(2) || '未知'}%\n`;
+                      stockDataContext += `  1周: ${tech.price_changes['1w']?.toFixed(2) || '未知'}%\n`;
+                      stockDataContext += `  1月: ${tech.price_changes['1m']?.toFixed(2) || '未知'}%\n`;
+                    }
+                  }
+                  
+                  // Get additional technical indicators if specifically requested
+                  if (messageContent.includes('移动平均')) {
+                    const maResult = await mcpStockClient.getMovingAverages(symbol);
+                    if (maResult.success && maResult.data) {
+                      stockDataContext += `\n[移动平均线详细数据]\n`;
+                      const ma = maResult.data.moving_averages;
+                      Object.keys(ma).forEach(key => {
+                        stockDataContext += `${key}: $${ma[key].current?.toFixed(2) || '未知'}\n`;
+                      });
+                    }
+                  }
+                  
+                  if (messageContent.includes('rsi')) {
+                    const rsiResult = await mcpStockClient.getRSI(symbol);
+                    if (rsiResult.success && rsiResult.data) {
+                      stockDataContext += `\n[RSI详细数据]\n`;
+                      stockDataContext += `当前RSI: ${rsiResult.data.current_rsi?.toFixed(2) || '未知'}\n`;
+                      stockDataContext += `RSI周期: ${rsiResult.data.window}\n`;
+                    }
+                  }
+                  
+                  if (messageContent.includes('macd')) {
+                    const macdResult = await mcpStockClient.getMACD(symbol);
+                    if (macdResult.success && macdResult.data) {
+                      stockDataContext += `\n[MACD详细数据]\n`;
+                      stockDataContext += `MACD线: ${macdResult.data.current_macd?.toFixed(4) || '未知'}\n`;
+                      stockDataContext += `信号线: ${macdResult.data.current_signal?.toFixed(4) || '未知'}\n`;
+                      stockDataContext += `柱状图: ${macdResult.data.current_histogram?.toFixed(4) || '未知'}\n`;
+                    }
+                  }
+                  
+                } catch (techError) {
+                  logger.warn('Failed to fetch technical analysis data', { symbol, error: techError });
+                  stockDataContext += `\n[技术分析数据获取部分失败]\n`;
+                }
+              }
+              
+              stockDataContext += `数据来源: MCP yfinance服务器\n`;
+            } else {
+              stockDataContext += `\n\n[股票数据获取失败 - ${symbol}]\n错误: ${stockPriceResult.error || '未知错误'}\n`;
+            }
             
           } catch (error) {
             logger.error('Failed to fetch stock data via MCP', { symbol, error });

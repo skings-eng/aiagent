@@ -71,7 +71,7 @@ else
 fi
 
 # Frontend environment (already created)
-if [ -f "frontend/c-end/.env" ]; then
+if [ -f "frontend/b-end/.env" ]; then
     log_info "Frontend .env file already exists"
 else
     log_warn "Frontend .env file not found, this might cause issues"
@@ -110,7 +110,7 @@ log_info "🎉 Development environment setup completed!"
 echo ""
 log_info "Available commands:"
 echo "  npm run dev                - Start both frontend and API in development mode"
-echo "  npm run dev:frontend       - Start only frontend (c-end)"
+echo "  npm run dev:frontend       - Start only frontend (b-end)"
 echo "  npm run dev:api            - Start only API backend"
 echo "  npm run build              - Build all components for production"
 echo "  npm run test               - Run all tests"

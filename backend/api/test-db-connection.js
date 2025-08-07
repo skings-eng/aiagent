@@ -299,7 +299,7 @@ async function testProjectConfiguration() {
       'backend/api/src',
       'backend/api/dist',
       'backend/line/src',
-      'frontend/c-end/src',
+      'frontend/b-end/src',
       'shared/src',
       'package.json',
       'ecosystem.config.js'

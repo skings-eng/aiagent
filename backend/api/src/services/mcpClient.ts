@@ -16,7 +16,7 @@ class MCPStockClient {
 
   constructor() {
     this.pythonPath = process.env.MCP_PYTHON_PATH || '/Users/sking/aiagent/backend/api/mcp-yfinance-server/venv/bin/python';
-    this.serverPath = process.env.MCP_SERVER_PATH || '/Users/sking/aiagent/backend/api/mcp-yfinance-server/demo_stock_price_server.py';
+    this.serverPath = process.env.MCP_SERVER_PATH || '/Users/sking/aiagent/backend/api/mcp-yfinance-server/simple_stock_server.py';
     this.timeout = parseInt(process.env.MCP_TIMEOUT || '30000');
     this.retryCount = parseInt(process.env.MCP_RETRY_COUNT || '3');
   }
@@ -51,6 +51,58 @@ class MCPStockClient {
 
   async getRealtimeWatchlistPrices(): Promise<MCPToolResult> {
     return this.callMCPToolWithRetry('get_realtime_watchlist_prices', {});
+  }
+
+  async getMovingAverages(symbol: string, period: string = '6mo', interval: string = '1d', windows: number[] = [20, 50, 200]): Promise<MCPToolResult> {
+    return this.callMCPToolWithRetry('get_moving_averages', { symbol, period, interval, windows });
+  }
+
+  async getRSI(symbol: string, period: string = '6mo', interval: string = '1d', window: number = 14): Promise<MCPToolResult> {
+    return this.callMCPToolWithRetry('get_rsi', { symbol, period, interval, window });
+  }
+
+  async getMACD(symbol: string, period: string = '6mo', interval: string = '1d', fast_period: number = 12, slow_period: number = 26, signal_period: number = 9): Promise<MCPToolResult> {
+    return this.callMCPToolWithRetry('get_macd', { symbol, period, interval, fast_period, slow_period, signal_period });
+  }
+
+  async getBollingerBands(symbol: string, period: string = '6mo', interval: string = '1d', window: number = 20, num_std: number = 2): Promise<MCPToolResult> {
+    return this.callMCPToolWithRetry('get_bollinger_bands', { symbol, period, interval, window, num_std });
+  }
+
+  async getVolatilityAnalysis(symbol: string, period: string = '1y', interval: string = '1d'): Promise<MCPToolResult> {
+    return this.callMCPToolWithRetry('get_volatility_analysis', { symbol, period, interval });
+  }
+
+  async getSupportResistance(symbol: string, period: string = '1y', interval: string = '1d', window: number = 20): Promise<MCPToolResult> {
+    return this.callMCPToolWithRetry('get_support_resistance', { symbol, period, interval, window });
+  }
+
+  async getTrendAnalysis(symbol: string, period: string = '1y', interval: string = '1d'): Promise<MCPToolResult> {
+    return this.callMCPToolWithRetry('get_trend_analysis', { symbol, period, interval });
+  }
+
+  async getTechnicalSummary(symbol: string): Promise<MCPToolResult> {
+    return this.callMCPToolWithRetry('get_technical_summary', { symbol });
+  }
+
+  async analyzeStock(symbol: string): Promise<MCPToolResult> {
+    return this.callMCPToolWithRetry('analyze_stock', { ticker: symbol });
+  }
+
+  async getFundamentalData(symbol: string): Promise<MCPToolResult> {
+    return this.callMCPToolWithRetry('get_fundamental_data', { symbol });
+  }
+
+  async getComprehensiveStockData(symbol: string): Promise<MCPToolResult> {
+    return this.callMCPToolWithRetry('get_comprehensive_stock_data', { symbol });
+  }
+
+  async getFundamentalData(symbol: string): Promise<MCPToolResult> {
+    return this.callMCPToolWithRetry('get_fundamental_data', { symbol });
+  }
+
+  async getComprehensiveStockData(symbol: string): Promise<MCPToolResult> {
+    return this.callMCPToolWithRetry('get_comprehensive_stock_data', { symbol });
   }
 
   async getComprehensiveAnalysis(symbol: string): Promise<MCPToolResult> {
