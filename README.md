@@ -9,8 +9,9 @@
 - **后端API**: Node.js + Express + TypeScript (端口: 3001)
 - **LINE Bot**: LINE机器人服务 (端口: 3003)
 - **MCP服务**: 股票数据服务器 (端口: 3002)
-- **AI服务**: 支持OpenAI、Claude、Gemini
+- **AI服务**: 支持OpenAI、Claude、Gemini（已优化配置）
 - **数据库**: MongoDB + Redis
+- **故障排查工具**: 自动化诊断和修复脚本
 
 ## 📋 系统要求
 
@@ -115,7 +116,7 @@ PORT=3001
 SERVER_HOST=0.0.0.0
 
 # 数据库配置
-MONGODB_URI=mongodb://localhost:27017/japan-stock-ai
+MONGODB_URI=mongodb://localhost:27017/aiagent_prod
 REDIS_HOST=localhost
 REDIS_PORT=6379
 REDIS_PASSWORD=
@@ -169,11 +170,13 @@ EOF
 #### 4.3 配置前端环境变量
 ```bash
 # 创建前端环境配置文件
-cat > frontend/b-end/.env << 'EOF'
+cat > frontend/c-end/.env << 'EOF'
 VITE_API_BASE_URL=http://你的服务器IP:3001
 VITE_GEMINI_API_KEY=你的Gemini_API密钥
 EOF
 ```
+
+**注意：** 前端目录已从 `b-end` 更新为 `c-end`，配置文件路径相应调整。
 
 **⚠️ 重要提醒：请将上面的 `你的服务器IP` 替换为你的实际服务器IP地址！**
 
@@ -365,6 +368,48 @@ pm2 delete aiagent-api
 
 ## 🛠️ 故障排除
 
+### 🚨 Gemini API Key配置问题（重要！）
+
+如果遇到Gemini API Key无法保存或测试失败的问题，我们提供了专门的修复工具：
+
+#### 快速修复（推荐）
+```bash
+# 运行快速修复脚本
+./quick-fix-gemini.sh
+```
+
+#### 详细诊断
+```bash
+# 运行详细诊断脚本
+node diagnose-gemini-issue.js
+```
+
+#### 交互式修复
+```bash
+# 运行交互式修复脚本
+node fix-gemini-config.js
+```
+
+#### 数据库名称配置问题
+**重要：** 不同环境使用不同的数据库名称：
+- 开发环境：`japan-stock-ai`
+- 官方生产环境：`japan_stock_ai_prod`
+- Ubuntu部署环境：`aiagent_prod`
+
+确保您的 `backend/api/.env` 文件中使用正确的数据库名称：
+```bash
+# 检查当前配置
+grep MONGODB_URI backend/api/.env
+
+# 应该显示：
+MONGODB_URI=mongodb://localhost:27017/aiagent_prod
+```
+
+**详细文档：**
+- 数据库配置指南：`DATABASE_CONFIG_GUIDE.md`
+- Gemini配置故障排查：`GEMINI_CONFIG_TROUBLESHOOTING.md`
+- 修复工具使用指南：`GEMINI_FIX_TOOLS.md`
+
 ### 常见问题解决
 
 #### 1. 服务无法启动
@@ -390,7 +435,7 @@ curl http://localhost:3001/health
 sudo ufw status
 
 # 检查环境变量配置
-cat frontend/b-end/.env
+cat frontend/c-end/.env
 ```
 
 #### 3. MongoDB连接失败
@@ -403,6 +448,24 @@ sudo systemctl restart mongod
 
 # 查看MongoDB日志
 sudo journalctl -u mongod
+
+# 测试数据库连接
+node backend/api/test-db-connection.js
+```
+
+#### 7. Gemini API Key无法保存
+```bash
+# 运行快速修复
+./quick-fix-gemini.sh
+
+# 检查数据库配置
+grep MONGODB_URI backend/api/.env
+
+# 重启服务
+pm2 restart all
+
+# 验证配置
+node backend/api/check_gemini_config.js
 ```
 
 #### 4. Redis连接失败
@@ -512,7 +575,22 @@ git pull origin main
 
 ## 📚 更多资源
 
-- **项目文档**: 查看项目根目录下的其他文档文件
+### 📖 项目文档
+- **快速开始指南**: `QUICK_START.md`
+- **Ubuntu部署指南**: `UBUNTU_DEPLOY_GUIDE.md`
+- **数据库配置指南**: `DATABASE_CONFIG_GUIDE.md`
+- **Gemini配置故障排查**: `GEMINI_CONFIG_TROUBLESHOOTING.md`
+- **修复工具使用指南**: `GEMINI_FIX_TOOLS.md`
+- **部署文档**: `DEPLOYMENT.md`
+
+### 🛠️ 自动化工具
+- **快速修复脚本**: `quick-fix-gemini.sh`
+- **详细诊断脚本**: `diagnose-gemini-issue.js`
+- **交互式修复脚本**: `fix-gemini-config.js`
+- **数据库连接测试**: `backend/api/test-db-connection.js`
+- **Gemini配置检查**: `backend/api/check_gemini_config.js`
+
+### 🌐 在线资源
 - **API文档**: 访问 http://你的服务器IP:3001/api-docs
 - **GitHub仓库**: https://github.com/skings-eng/aiagent
 - **问题反馈**: 在GitHub上提交Issue
