@@ -89,11 +89,22 @@ ls -la backend/line/ | grep dist || log_info "No dist directory in backend/line"
 log_info "Verifying build output..."
 if [ ! -f "backend/api/dist/server.js" ]; then
     log_error "Backend API build failed - server.js not found"
+    log_info "Available files in backend/api/dist:"
+    ls -la backend/api/dist/ || log_error "dist directory does not exist"
     exit 1
 fi
 
 if [ ! -f "backend/line/dist/index.js" ]; then
     log_error "LINE service build failed - index.js not found"
+    log_info "Available files in backend/line/dist:"
+    ls -la backend/line/dist/ || log_error "dist directory does not exist"
+    exit 1
+fi
+
+if [ ! -f "frontend/b-end/dist/index.html" ]; then
+    log_error "Frontend build failed - index.html not found"
+    log_info "Available files in frontend/b-end/dist:"
+    ls -la frontend/b-end/dist/ || log_error "dist directory does not exist"
     exit 1
 fi
 
@@ -160,7 +171,7 @@ module.exports = {
   apps: [
     {
       name: 'aiagent-api',
-      script: '${PROJECT_DIR}/backend/api/dist/server.js',
+      script: './backend/api/dist/server.js',
       cwd: '${PROJECT_DIR}',
       env: {
         NODE_ENV: 'production',
@@ -182,7 +193,7 @@ module.exports = {
       name: 'aiagent-frontend',
       script: 'npm',
       args: 'run preview',
-      cwd: '${PROJECT_DIR}/frontend/b-end',
+      cwd: './frontend/b-end',
       env: {
         NODE_ENV: 'production',
         PORT: ${FRONTEND_PORT},
@@ -201,7 +212,7 @@ module.exports = {
     },
     {
       name: 'aiagent-line',
-      script: '${PROJECT_DIR}/backend/line/dist/index.js',
+      script: './backend/line/dist/index.js',
       cwd: '${PROJECT_DIR}',
       env: {
         NODE_ENV: 'production',
