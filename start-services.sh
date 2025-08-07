@@ -227,7 +227,31 @@ start_frontend_server() {
         log_info "启动前端服务..."
         
         cd frontend/b-end
-        pm2 serve dist 3000 --name "aiagent-frontend" --spa || log_warning "前端服务器可能已在运行"
+        
+        # 检查是否有.env文件，如果没有则创建
+        if [ ! -f ".env" ]; then
+            log_info "创建前端环境配置文件..."
+            cat > .env << EOF
+VITE_API_BASE_URL=http://172.237.20.24:8001
+VITE_GEMINI_API_KEY=your_gemini_api_key_here
+EOF
+            log_warning "请编辑 frontend/b-end/.env 文件，填入您的Gemini API密钥"
+        else
+            # 更新API地址为生产环境地址
+            sed -i 's|VITE_API_BASE_URL=.*|VITE_API_BASE_URL=http://172.237.20.24:8001|' .env
+        fi
+        
+        # 安装依赖并构建
+        log_info "安装前端依赖..."
+        npm install
+        
+        log_info "构建前端项目..."
+        npm run build
+        
+        # 启动前端服务
+        log_info "启动前端服务..."
+        pm2 start --name "aiagent-frontend" npm -- run preview -- --port 3000 --host 0.0.0.0 || log_warning "前端服务器可能已在运行"
+        
         cd ../..
         
         log_success "前端服务启动完成"
