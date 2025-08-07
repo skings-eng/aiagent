@@ -57,6 +57,9 @@ const corsOptions = {
       'http://127.0.0.1:3003',
       'http://127.0.0.1:3004',
       'http://127.0.0.1:5173',
+      'http://172.237.20.24:3000', // Production frontend server
+      'http://172.237.20.24:3001', // Alternative frontend port
+      'http://172.237.20.24:3002', // Alternative frontend port
     ];
     
     // Add production origins from environment
