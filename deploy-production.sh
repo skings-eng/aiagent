@@ -196,6 +196,41 @@ EOF
 sudo mkdir -p /var/log/aiagent
 sudo chown $USER:$USER /var/log/aiagent
 
+# Build backend services
+log_info "Building backend services..."
+
+# Build API service
+log_info "Building API service..."
+cd "${PROJECT_DIR}/backend/api"
+npm install
+npm run build
+if [[ ! -f "dist/server.js" ]]; then
+    log_error "API build failed - server.js not found"
+    exit 1
+fi
+log_info "API service built successfully"
+
+# Build LINE service
+log_info "Building LINE service..."
+cd "${PROJECT_DIR}/backend/line"
+npm install
+npm run build
+if [[ ! -f "dist/index.js" ]]; then
+    log_error "LINE service build failed - index.js not found"
+    exit 1
+fi
+log_info "LINE service built successfully"
+
+# Build frontend service
+log_info "Building frontend service..."
+cd "${PROJECT_DIR}/frontend/b-end"
+npm install
+npm run build
+log_info "Frontend service built successfully"
+
+# Return to project root
+cd "${PROJECT_DIR}"
+
 # Create PM2 ecosystem file
 log_info "Creating PM2 ecosystem configuration..."
 cat > ecosystem.config.js << EOF
