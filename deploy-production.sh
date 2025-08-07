@@ -51,6 +51,13 @@ if ! command -v pm2 &> /dev/null; then
     npm install -g pm2
 fi
 
+# Change to project directory
+log_info "Changing to project directory: ${PROJECT_DIR}"
+cd "${PROJECT_DIR}" || {
+    log_error "Failed to change to project directory: ${PROJECT_DIR}"
+    exit 1
+}
+
 # Stop existing services
 log_info "Stopping existing services..."
 pm2 stop aiagent-api || true
@@ -297,6 +304,8 @@ log_info "All PM2 paths verified successfully"
 
 # Start services with PM2
 log_info "Starting services with PM2..."
+# Set PROJECT_ROOT environment variable for PM2
+export PROJECT_ROOT="${PROJECT_DIR}"
 pm2 start ecosystem.config.js
 
 # Save PM2 configuration

@@ -486,6 +486,10 @@ if [[ ! -f "package.json" ]]; then
     exit 1
 fi
 
+# 获取项目根目录的绝对路径
+PROJECT_ROOT="$(pwd)"
+log_info "项目根目录: ${PROJECT_ROOT}"
+
 # 检查数据库服务
 log_info "检查数据库服务..."
 if ! sudo systemctl is-active --quiet mongod; then
@@ -498,29 +502,45 @@ if ! sudo systemctl is-active --quiet redis-server; then
     sudo systemctl start redis-server
 fi
 
+# 确保在项目根目录下执行PM2命令
+log_info "切换到项目根目录: ${PROJECT_ROOT}"
+cd "${PROJECT_ROOT}" || {
+    log_error "无法切换到项目根目录: ${PROJECT_ROOT}"
+    exit 1
+}
+
 # 停止现有的PM2进程
 log_info "停止现有服务..."
 pm2 delete all 2>/dev/null || true
 
+# 设置PROJECT_ROOT环境变量供PM2使用
+export PROJECT_ROOT="${PROJECT_ROOT}"
+
 # 启动MCP服务器
 log_info "启动MCP服务器..."
-cd backend/api/mcp-yfinance-server
+cd "${PROJECT_ROOT}/backend/api/mcp-yfinance-server" || {
+    log_error "无法切换到MCP服务器目录"
+    exit 1
+}
 source venv/bin/activate
 pm2 start --name "aiagent-mcp" --interpreter python3 demo_stock_price_server.py
-cd ../../..
+cd "${PROJECT_ROOT}" || {
+    log_error "无法返回项目根目录"
+    exit 1
+}
 
 # 启动后端API服务
 log_info "启动API服务..."
-pm2 start --name "aiagent-api" --cwd backend/api npm -- start
+pm2 start --name "aiagent-api" --cwd "${PROJECT_ROOT}/backend/api" npm -- start
 
 # 启动LINE Bot服务
 log_info "启动LINE Bot服务..."
-pm2 start --name "aiagent-line" --cwd backend/line npm -- start
+pm2 start --name "aiagent-line" --cwd "${PROJECT_ROOT}/backend/line" npm -- start
 
 # 检查是否需要启动前端服务
 if [[ "$1" == "--with-frontend" ]]; then
     log_info "启动前端服务..."
-    pm2 start --name "aiagent-frontend" --cwd frontend/b-end npm -- run preview -- --port 3000 --host 0.0.0.0
+    pm2 start --name "aiagent-frontend" --cwd "${PROJECT_ROOT}/frontend/b-end" npm -- run preview -- --port 3000 --host 0.0.0.0
 fi
 
 # 保存PM2配置

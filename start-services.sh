@@ -189,7 +189,10 @@ start_mcp_server() {
     # 使用PM2启动MCP服务器
     pm2 start demo_stock_price_server.py --name "aiagent-mcp" --interpreter python3 --cwd "$(pwd)" || log_warning "MCP服务器可能已在运行"
     
-    cd ../../..
+    cd "${PROJECT_ROOT}" || {
+        log_error "无法返回项目根目录"
+        exit 1
+    }
     log_success "MCP服务器启动完成"
 }
 
@@ -197,9 +200,15 @@ start_mcp_server() {
 start_api_server() {
     log_info "启动后端API服务..."
     
-    cd backend/api
+    cd "${PROJECT_ROOT}/backend/api" || {
+        log_error "无法切换到API目录"
+        exit 1
+    }
     pm2 start dist/index.js --name "aiagent-api" --env production || log_warning "API服务器可能已在运行"
-    cd ../..
+    cd "${PROJECT_ROOT}" || {
+        log_error "无法返回项目根目录"
+        exit 1
+    }
     
     log_success "后端API服务启动完成"
 }
@@ -209,11 +218,17 @@ start_line_server() {
     log_info "启动LINE Bot服务..."
     
     # 检查是否配置了LINE token
-    if grep -q "^LINE_CHANNEL_ACCESS_TOKEN=.\+" backend/line/.env && 
-       grep -q "^LINE_CHANNEL_SECRET=.\+" backend/line/.env; then
-        cd backend/line
+    if grep -q "^LINE_CHANNEL_ACCESS_TOKEN=.\+" "${PROJECT_ROOT}/backend/line/.env" && 
+       grep -q "^LINE_CHANNEL_SECRET=.\+" "${PROJECT_ROOT}/backend/line/.env"; then
+        cd "${PROJECT_ROOT}/backend/line" || {
+            log_error "无法切换到LINE目录"
+            exit 1
+        }
         pm2 start dist/index.js --name "aiagent-line" --env production || log_warning "LINE Bot服务器可能已在运行"
-        cd ../..
+        cd "${PROJECT_ROOT}" || {
+            log_error "无法返回项目根目录"
+            exit 1
+        }
         log_success "LINE Bot服务启动完成"
     else
         log_warning "LINE Bot配置未完成，跳过LINE服务启动"
@@ -226,7 +241,10 @@ start_frontend_server() {
     if [ "$1" = "--with-frontend" ]; then
         log_info "启动前端服务..."
         
-        cd frontend/b-end
+        cd "${PROJECT_ROOT}/frontend/b-end" || {
+            log_error "无法切换到前端目录"
+            exit 1
+        }
         
         # 检查是否有.env文件，如果没有则创建
         if [ ! -f ".env" ]; then
@@ -252,7 +270,10 @@ EOF
         log_info "启动前端服务..."
         pm2 start --name "aiagent-frontend" npm -- run preview -- --port 4173 --host 0.0.0.0 || log_warning "前端服务器可能已在运行"
         
-        cd ../..
+        cd "${PROJECT_ROOT}" || {
+            log_error "无法返回项目根目录"
+            exit 1
+        }
         
         log_success "前端服务启动完成"
     fi
@@ -295,6 +316,13 @@ show_status() {
     fi
 }
 
+# 设置环境变量
+setup_environment() {
+    # 设置PROJECT_ROOT环境变量供PM2使用
+    export PROJECT_ROOT="${PROJECT_ROOT}"
+    log_info "环境变量已设置: PROJECT_ROOT=${PROJECT_ROOT}"
+}
+
 # 主函数
 main() {
     echo "======================================"
@@ -307,6 +335,13 @@ main() {
         log_error "请在项目根目录下运行此脚本"
         exit 1
     fi
+    
+    # 获取项目根目录的绝对路径
+    PROJECT_ROOT="$(pwd)"
+    log_info "项目根目录: ${PROJECT_ROOT}"
+    
+    # 设置环境变量
+    setup_environment
     
     check_root
     check_dependencies
