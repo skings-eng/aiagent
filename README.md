@@ -1,15 +1,15 @@
-# 智能投资助手 - Ubuntu 开发环境搭建指南
+# 🤖 AI智能投资助手 - 完整部署指南
 
-一个基于AI的日本股市分析助手，支持实时股价查询、技术分析和智能问答。
+一个基于AI的智能投资助手系统，支持股票分析、实时查询、LINE Bot聊天等功能。
 
 ## 🎯 项目简介
 
 本项目是一个完整的AI投资助手系统，包含：
-- **前端界面**: React + Vite + Tailwind CSS
-- **后端API**: Node.js + Express + TypeScript
-- **LINE Bot**: 微信机器人服务
+- **前端界面**: React + Vite + Tailwind CSS (端口: 4173)
+- **后端API**: Node.js + Express + TypeScript (端口: 3001)
+- **LINE Bot**: LINE机器人服务 (端口: 3003)
+- **MCP服务**: 股票数据服务器 (端口: 3002)
 - **AI服务**: 支持OpenAI、Claude、Gemini
-- **股票数据**: MCP股票数据服务器
 - **数据库**: MongoDB + Redis
 
 ## 📋 系统要求
@@ -18,474 +18,512 @@
 - **内存**: 最少2GB，推荐4GB+
 - **硬盘**: 最少10GB可用空间
 - **网络**: 稳定的互联网连接
+- **域名/IP**: 公网IP地址或域名（用于LINE Bot webhook）
 
-## 🚀 一键安装（推荐）
+## 🚀 新手小白完整部署指南
 
-### 方法一：使用安装脚本
+### 第一步：准备Ubuntu服务器
 
+#### 1.1 连接到服务器
 ```bash
-# 1. 克隆项目
+# 使用SSH连接到你的Ubuntu服务器
+ssh root@你的服务器IP
+# 或者
+ssh ubuntu@你的服务器IP
+```
+
+#### 1.2 更新系统
+```bash
+# 更新系统包列表
+sudo apt update
+
+# 升级所有已安装的包
+sudo apt upgrade -y
+
+# 安装基础工具
+sudo apt install -y curl wget git vim htop tree
+```
+
+### 第二步：从GitHub获取代码
+
+#### 2.1 克隆项目代码
+```bash
+# 进入用户主目录
+cd ~
+
+# 从GitHub克隆项目
 git clone https://github.com/skings-eng/aiagent.git
+
+# 进入项目目录
 cd aiagent
 
-# 2. 运行一键安装脚本
-chmod +x install-ubuntu.sh
+# 查看项目结构
+tree -L 2
+```
+
+#### 2.2 给脚本添加执行权限
+```bash
+# 给所有脚本添加执行权限
+chmod +x *.sh
+```
+
+### 第三步：一键安装所有依赖
+
+#### 3.1 运行安装脚本
+```bash
+# 运行Ubuntu安装脚本（这会安装所有需要的软件）
 ./install-ubuntu.sh
 ```
-没有权限的话 直接 bash install-ubuntu.sh
 
-安装脚本会自动完成：
-- ✅ 系统更新和基础软件安装
+**安装脚本会自动完成：**
 - ✅ Node.js 18.x 安装
 - ✅ Python 3.11+ 安装
 - ✅ MongoDB 7.0 安装和配置
 - ✅ Redis 7.x 安装和配置
 - ✅ PM2 进程管理器安装
 - ✅ 项目依赖安装和构建
-- ✅ 环境变量配置
 - ✅ 防火墙配置
 - ✅ 系统优化
 
-## 🔧 手动安装（详细步骤）
-
-如果一键安装失败，可以按照以下步骤手动安装：
-
-### 1. 更新系统
-
+#### 3.2 验证安装结果
 ```bash
-# 更新系统包
-sudo apt update && sudo apt upgrade -y
-
-# 安装基础依赖
-sudo apt install -y curl wget git build-essential software-properties-common \
-    apt-transport-https ca-certificates gnupg lsb-release unzip vim htop tree jq
-```
-
-### 2. 安装 Node.js 18.x
-
-```bash
-# 添加NodeSource仓库
-curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
-
-# 安装Node.js
-sudo apt-get install -y nodejs
-
-# 验证安装
+# 检查Node.js版本
 node --version  # 应该显示 v18.x.x
-npm --version   # 应该显示 9.x.x+
-```
 
-### 3. 安装 Python 3.11+
-
-```bash
-# 添加deadsnakes PPA
-sudo add-apt-repository ppa:deadsnakes/ppa -y
-sudo apt update
-
-# 安装Python 3.11
-sudo apt install -y python3.11 python3.11-venv python3.11-dev python3-pip python3.11-distutils
-
-# 设置为默认python3
-sudo update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.11 1
-
-# 验证安装
+# 检查Python版本
 python3 --version  # 应该显示 Python 3.11.x
-```
 
-### 4. 安装 MongoDB 7.0
-
-```bash
-# 导入MongoDB公钥
-curl -fsSL https://www.mongodb.org/static/pgp/server-7.0.asc | sudo gpg -o /usr/share/keyrings/mongodb-server-7.0.gpg --dearmor
-
-# 添加MongoDB源（Ubuntu 22.04）
-echo "deb [ arch=amd64,arm64 signed-by=/usr/share/keyrings/mongodb-server-7.0.gpg ] https://repo.mongodb.org/apt/ubuntu jammy/mongodb-org/7.0 multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-7.0.list
-
-# 更新包列表并安装
-sudo apt update
-sudo apt install -y mongodb-org
-
-# 启动并启用服务
-sudo systemctl start mongod
-sudo systemctl enable mongod
-
-# 验证安装
+# 检查MongoDB状态
 sudo systemctl status mongod
-mongosh --eval "db.adminCommand('ping')"
-```
 
-### 5. 安装 Redis 7.x
-
-```bash
-# 安装Redis
-sudo apt install -y redis-server
-
-# 配置Redis
-sudo sed -i 's/^supervised no/supervised systemd/' /etc/redis/redis.conf
-
-# 启动并启用服务
-sudo systemctl start redis-server
-sudo systemctl enable redis-server
-
-# 验证安装
+# 检查Redis状态
 sudo systemctl status redis-server
-redis-cli ping  # 应该返回 PONG
-```
 
-### 6. 安装 PM2 进程管理器
-
-```bash
-# 全局安装PM2
-sudo npm install -g pm2
-
-# 验证安装
+# 检查PM2
 pm2 --version
 ```
 
-### 7. 克隆和配置项目
+### 第四步：配置环境变量
 
+#### 4.1 配置后端API环境变量
 ```bash
-# 克隆项目
-git clone https://github.com/skings-eng/aiagent.git
-cd aiagent
+# 创建后端API环境配置文件
+cat > backend/api/.env << 'EOF'
+# 基础配置
+NODE_ENV=production
+PORT=3001
+SERVER_HOST=0.0.0.0
 
-# 安装根目录依赖
-npm install
-
-# 构建shared模块（必须先构建）
-cd shared
-npm install
-npm run build
-cd ..
-
-# 安装并构建后端API
-cd backend/api
-npm install
-npm run build
-cd ../..
-
-# 安装并构建LINE Bot
-cd backend/line
-npm install
-npm run build
-cd ../..
-
-# 安装前端依赖
-cd frontend/b-end
-npm install
-npm run build
-cd ../..
-
-# 设置MCP Python环境
-cd backend/api/mcp-yfinance-server
-python3 -m venv venv
-source venv/bin/activate
-pip install --upgrade pip
-pip install -e .
-cd ../../..
-```
-
-## ⚙️ 环境配置
-
-### 1. 配置后端API环境变量
-
-```bash
-# 复制环境变量模板
-cp backend/api/.env.example backend/api/.env
-
-# 编辑配置文件
-nano backend/api/.env
-```
-
-**重要配置项：**
-```env
-# 服务端口
-PORT=8001
-
-# 数据库连接
+# 数据库配置
 MONGODB_URI=mongodb://localhost:27017/japan-stock-ai
 REDIS_HOST=localhost
 REDIS_PORT=6379
+REDIS_PASSWORD=
+
+# CORS配置
+FRONTEND_URL=http://你的服务器IP:4173
+ALLOWED_ORIGINS=http://你的服务器IP:4173,http://localhost:4173
+
+# JWT配置
+JWT_SECRET=your-super-secret-jwt-key-change-this-in-production-$(date +%s)
+JWT_EXPIRES_IN=7d
 
 # AI API密钥（至少配置一个）
-GOOGLE_AI_API_KEY=your-google-ai-api-key
-OPENAI_API_KEY=your-openai-api-key
-ANTHROPIC_API_KEY=your-anthropic-api-key
+GOOGLE_AI_API_KEY=你的Google_AI_API密钥
+OPENAI_API_KEY=你的OpenAI_API密钥
+ANTHROPIC_API_KEY=你的Claude_API密钥
 
-# JWT密钥（生产环境必须修改）
-JWT_SECRET=your-super-secret-jwt-key-change-this-in-production
-```
-
-### 2. 配置LINE Bot环境变量
-
-```bash
-# 复制环境变量模板
-cp backend/line/.env.example backend/line/.env
-
-# 编辑配置文件
-nano backend/line/.env
-```
-
-**重要配置项：**
-```env
-# LINE Bot配置
-LINE_CHANNEL_ACCESS_TOKEN=your_line_channel_access_token_here
-LINE_CHANNEL_SECRET=your_line_channel_secret_here
-
-# 服务端口
-PORT=3003
-
-# Redis配置
-REDIS_URL=redis://localhost:6379
-```
-
-### 3. 配置前端环境变量
-
-```bash
-# 创建前端环境配置
-cat > frontend/b-end/.env << EOF
-VITE_API_BASE_URL=http://localhost:8001
-VITE_GEMINI_API_KEY=your_gemini_api_key_here
+# 日志配置
+LOG_LEVEL=info
 EOF
 ```
 
-## 🎮 启动服务
-
-### 开发环境启动
-
+#### 4.2 配置LINE Bot环境变量
 ```bash
-# 方法一：使用启动脚本（推荐）
-./start-services.sh --with-frontend
+# 创建LINE Bot环境配置文件
+cat > backend/line/.env << 'EOF'
+# 基础配置
+NODE_ENV=production
+PORT=3003
+SERVER_HOST=0.0.0.0
 
-# 方法二：手动启动各个服务
-# 1. 启动MCP服务器
-cd backend/api/mcp-yfinance-server
-source venv/bin/activate
-pm2 start --name "aiagent-mcp" --interpreter python3 demo_stock_price_server.py
-cd ../../..
+# Redis配置
+REDIS_URL=redis://localhost:6379
+REDIS_HOST=localhost
+REDIS_PORT=6379
+REDIS_PASSWORD=
 
-# 2. 启动后端API
-pm2 start --name "aiagent-api" --cwd backend/api npm -- start
+# LINE Bot配置（需要从LINE Developers获取）
+LINE_CHANNEL_ACCESS_TOKEN=你的LINE_CHANNEL_ACCESS_TOKEN
+LINE_CHANNEL_SECRET=你的LINE_CHANNEL_SECRET
 
-# 3. 启动LINE Bot
-pm2 start --name "aiagent-line" --cwd backend/line npm -- start
+# CORS配置
+CORS_ORIGIN=http://你的服务器IP:4173
+ALLOWED_ORIGINS=http://你的服务器IP:4173,http://localhost:4173
 
-# 4. 启动前端（可选）
-pm2 start --name "aiagent-frontend" --cwd frontend/b-end npm -- run preview -- --port 3000 --host 0.0.0.0
-
-# 保存PM2配置
-pm2 save
+# 日志配置
+LOG_LEVEL=info
+EOF
 ```
 
-### 查看服务状态
+#### 4.3 配置前端环境变量
+```bash
+# 创建前端环境配置文件
+cat > frontend/b-end/.env << 'EOF'
+VITE_API_BASE_URL=http://你的服务器IP:3001
+VITE_GEMINI_API_KEY=你的Gemini_API密钥
+EOF
+```
 
+**⚠️ 重要提醒：请将上面的 `你的服务器IP` 替换为你的实际服务器IP地址！**
+
+### 第五步：获取API密钥
+
+#### 5.1 获取Google Gemini API密钥
+1. 访问 [Google AI Studio](https://makersuite.google.com/app/apikey)
+2. 登录Google账号
+3. 点击"Create API Key"
+4. 复制生成的API密钥
+5. 将密钥填入环境变量文件
+
+#### 5.2 获取OpenAI API密钥（可选）
+1. 访问 [OpenAI Platform](https://platform.openai.com/api-keys)
+2. 登录OpenAI账号
+3. 点击"Create new secret key"
+4. 复制生成的API密钥
+
+#### 5.3 获取LINE Bot配置（可选）
+1. 访问 [LINE Developers](https://developers.line.biz/)
+2. 创建新的Provider和Channel
+3. 获取Channel Access Token和Channel Secret
+4. 设置Webhook URL: `http://你的服务器IP:3003/webhook`
+
+### 第六步：构建和部署项目
+
+#### 6.1 运行生产环境部署脚本
+```bash
+# 运行生产环境部署脚本
+./deploy-production.sh
+```
+
+**部署脚本会自动完成：**
+- ✅ 停止现有服务
+- ✅ 清理端口占用
+- ✅ 安装项目依赖
+- ✅ 构建所有服务
+- ✅ 创建生产环境配置
+- ✅ 配置PM2服务
+- ✅ 启动所有服务
+- ✅ 配置防火墙
+- ✅ 运行健康检查
+
+#### 6.2 验证部署结果
 ```bash
 # 查看所有服务状态
 pm2 status
 
-# 查看服务日志
+# 应该看到以下服务都在运行：
+# - aiagent-api (端口: 3001)
+# - aiagent-frontend (端口: 4173)
+# - aiagent-line (端口: 3003)
+# - aiagent-mcp (MCP服务)
+```
+
+### 第七步：测试服务
+
+#### 7.1 测试API服务
+```bash
+# 测试API健康检查
+curl http://localhost:3001/health
+
+# 测试外网访问
+curl http://你的服务器IP:3001/health
+```
+
+#### 7.2 测试前端服务
+```bash
+# 测试前端服务
+curl http://localhost:4173
+
+# 在浏览器中访问
+# http://你的服务器IP:4173
+```
+
+#### 7.3 测试LINE Bot服务
+```bash
+# 测试LINE Bot健康检查
+curl http://localhost:3003/health
+
+# 测试webhook端点
+curl http://你的服务器IP:3003/webhook
+```
+
+#### 7.4 测试MCP股票服务
+```bash
+# 查看MCP服务日志
+pm2 logs aiagent-mcp
+```
+
+### 第八步：配置防火墙和安全
+
+#### 8.1 配置UFW防火墙
+```bash
+# 启用防火墙
+sudo ufw enable
+
+# 允许SSH
+sudo ufw allow ssh
+
+# 允许HTTP和HTTPS
+sudo ufw allow 80
+sudo ufw allow 443
+
+# 允许应用端口
+sudo ufw allow 3001  # API服务
+sudo ufw allow 4173  # 前端服务
+sudo ufw allow 3003  # LINE Bot服务
+
+# 查看防火墙状态
+sudo ufw status
+```
+
+#### 8.2 配置云服务商安全组
+如果使用阿里云、腾讯云、AWS等云服务，还需要在控制台配置安全组：
+- 开放端口：22 (SSH), 80 (HTTP), 443 (HTTPS), 3001, 4173, 3003
+- 允许来源：0.0.0.0/0 (所有IP)
+
+## 🌐 访问地址
+
+部署成功后，可以通过以下地址访问：
+
+- **前端界面**: http://你的服务器IP:4173
+- **API服务**: http://你的服务器IP:3001
+- **API文档**: http://你的服务器IP:3001/api-docs
+- **LINE Bot**: http://你的服务器IP:3003
+- **健康检查**: 
+  - API: http://你的服务器IP:3001/health
+  - LINE: http://你的服务器IP:3003/health
+
+## 🔧 服务管理命令
+
+### 查看服务状态
+```bash
+# 查看所有服务状态
+pm2 status
+
+# 查看服务详细信息
+pm2 show aiagent-api
+pm2 show aiagent-frontend
+pm2 show aiagent-line
+pm2 show aiagent-mcp
+```
+
+### 查看服务日志
+```bash
+# 查看所有服务日志
 pm2 logs
 
 # 查看特定服务日志
 pm2 logs aiagent-api
-pm2 logs aiagent-mcp
+pm2 logs aiagent-frontend
 pm2 logs aiagent-line
+pm2 logs aiagent-mcp
+
+# 实时查看日志
+pm2 logs --lines 50
+```
+
+### 重启服务
+```bash
+# 重启所有服务
+pm2 restart all
+
+# 重启特定服务
+pm2 restart aiagent-api
+pm2 restart aiagent-frontend
+pm2 restart aiagent-line
+pm2 restart aiagent-mcp
 ```
 
 ### 停止服务
-
 ```bash
-# 使用停止脚本
-./stop-services.sh
+# 停止所有服务
+pm2 stop all
 
-# 或手动停止
+# 停止特定服务
+pm2 stop aiagent-api
+```
+
+### 删除服务
+```bash
+# 删除所有服务
 pm2 delete all
-pm2 kill
+
+# 删除特定服务
+pm2 delete aiagent-api
 ```
-
-## 🌐 访问地址
-
-启动成功后，可以通过以下地址访问：
-
-- **前端界面**: http://localhost:3000
-- **API服务**: http://localhost:8001
-- **LINE Bot**: http://localhost:3003
-- **API文档**: http://localhost:8001/api-docs
-
-## 🔍 验证安装
-
-### 1. 检查数据库连接
-
-```bash
-# 测试MongoDB
-mongosh --eval "db.adminCommand('ping')"
-
-# 测试Redis
-redis-cli ping
-```
-
-### 2. 检查API服务
-
-```bash
-# 测试API健康检查
-curl http://localhost:8001/health
-
-# 测试股票查询
-curl "http://localhost:8001/api/v1/chat" -X POST \
-  -H "Content-Type: application/json" \
-  -d '{"message":"查询苹果公司股价"}'
-```
-
-### 3. 检查前端服务
-
-打开浏览器访问 http://localhost:3000，应该能看到聊天界面。
 
 ## 🛠️ 故障排除
 
-### 常见问题
+### 常见问题解决
 
-**1. 端口被占用**
+#### 1. 服务无法启动
 ```bash
-# 查看端口占用
-sudo lsof -i :8001
-sudo lsof -i :3000
+# 检查端口占用
+sudo lsof -i :3001
+sudo lsof -i :4173
 sudo lsof -i :3003
 
 # 杀死占用进程
 sudo kill -9 <PID>
+
+# 重新启动服务
+pm2 restart all
 ```
 
-**2. MongoDB启动失败**
+#### 2. 前端无法访问后端API
+```bash
+# 检查API服务状态
+curl http://localhost:3001/health
+
+# 检查防火墙
+sudo ufw status
+
+# 检查环境变量配置
+cat frontend/b-end/.env
+```
+
+#### 3. MongoDB连接失败
 ```bash
 # 检查MongoDB状态
 sudo systemctl status mongod
 
-# 查看MongoDB日志
-sudo journalctl -u mongod
-
 # 重启MongoDB
 sudo systemctl restart mongod
+
+# 查看MongoDB日志
+sudo journalctl -u mongod
 ```
 
-**3. Redis启动失败**
+#### 4. Redis连接失败
 ```bash
 # 检查Redis状态
 sudo systemctl status redis-server
 
 # 重启Redis
 sudo systemctl restart redis-server
+
+# 测试Redis连接
+redis-cli ping
 ```
 
-**4. Python虚拟环境问题**
+#### 5. LINE Bot webhook失败
 ```bash
-# 重新创建虚拟环境
+# 检查LINE服务日志
+pm2 logs aiagent-line
+
+# 测试webhook端点
+curl -X POST http://你的服务器IP:3003/webhook \
+  -H "Content-Type: application/json" \
+  -d '{}'
+```
+
+#### 6. MCP服务异常
+```bash
+# 检查MCP服务状态
+pm2 logs aiagent-mcp
+
+# 重启MCP服务
+pm2 restart aiagent-mcp
+
+# 手动测试MCP服务
 cd backend/api/mcp-yfinance-server
-rm -rf venv
-python3 -m venv venv
 source venv/bin/activate
-pip install --upgrade pip
-pip install -e .
+python simple_stock_server.py
 ```
 
-**5. 前端构建失败**
-```bash
-# 清理并重新安装
-cd frontend/b-end
-rm -rf node_modules package-lock.json
-npm install
-npm run build
-```
-
-**6. PM2服务异常**
-```bash
-# 重启PM2
-pm2 kill
-pm2 resurrect
-
-# 或重新启动服务
-./start-services.sh --with-frontend
-```
-
-**7. 公网部署访问问题**
-
-如果公网部署后无法访问（如 `http://你的服务器IP:3000` 打不开），请按以下步骤排查：
+### 完全重新部署
+如果遇到严重问题，可以完全重新部署：
 
 ```bash
-# 1. 运行诊断脚本
-./diagnose.sh
+# 停止所有服务
+pm2 delete all
 
-# 2. 运行自动修复脚本
-./fix-deployment.sh
+# 清理构建文件
+find . -name "node_modules" -type d -exec rm -rf {} +
+find . -name "dist" -type d -exec rm -rf {} +
+find . -name "build" -type d -exec rm -rf {} +
 
-# 3. 手动检查常见问题
-# 检查防火墙
-sudo ufw status
-sudo ufw allow 3000
-sudo ufw allow 3001
-sudo ufw allow 3002
-
-# 检查端口监听
-netstat -tlnp | grep :3000
-netstat -tlnp | grep :3001
-
-# 测试本地连接
-curl http://localhost:3000
-curl http://localhost:3001/health
-
-# 测试外网连接
-curl http://你的服务器IP:3000
-curl http://你的服务器IP:3001/health
+# 重新运行部署脚本
+./deploy-production.sh
 ```
 
-**常见公网部署问题：**
-- 端口配置不一致（前端代理 vs 后端API端口）
-- 防火墙未开放相应端口
-- 云服务商安全组未配置
-- 前端host配置不允许外网访问
-- 服务未正确启动或崩溃
+## 📊 性能监控
 
-**详细故障排除指南**: 查看 `DEPLOYMENT_TROUBLESHOOTING.md` 文件
+### 系统监控
+```bash
+# 查看系统资源使用情况
+htop
 
-### 日志文件位置
+# 查看磁盘使用情况
+df -h
 
-- **PM2日志**: `~/.pm2/logs/`
-- **MongoDB日志**: `/var/log/mongodb/mongod.log`
-- **Redis日志**: `/var/log/redis/redis-server.log`
-- **系统日志**: `sudo journalctl -u <service-name>`
+# 查看内存使用情况
+free -h
 
-## 📚 API密钥获取
+# 查看网络连接
+netstat -tlnp
+```
 
-### Google Gemini API
-1. 访问 [Google AI Studio](https://makersuite.google.com/app/apikey)
-2. 登录Google账号
-3. 点击"Create API Key"
-4. 复制生成的API密钥
+### PM2监控
+```bash
+# PM2监控面板
+pm2 monit
 
-### OpenAI API
-1. 访问 [OpenAI Platform](https://platform.openai.com/api-keys)
-2. 登录OpenAI账号
-3. 点击"Create new secret key"
-4. 复制生成的API密钥
+# 查看PM2进程列表
+pm2 list
 
-### LINE Bot配置
-1. 访问 [LINE Developers](https://developers.line.biz/)
-2. 创建新的Provider和Channel
-3. 获取Channel Access Token和Channel Secret
+# 查看服务资源使用
+pm2 show aiagent-api
+```
 
-## 🎯 下一步
+## 🔄 更新代码
 
-1. **配置API密钥**: 编辑环境变量文件，填入你的API密钥
-2. **启动服务**: 运行 `./start-services.sh --with-frontend`
-3. **测试功能**: 访问前端界面，测试股票查询功能
-4. **配置LINE Bot**: 如需LINE Bot功能，配置LINE相关环境变量
-5. **生产部署**: 参考生产环境部署文档
+当GitHub上的代码更新时，可以这样更新服务器上的代码：
+
+```bash
+# 进入项目目录
+cd ~/aiagent
+
+# 拉取最新代码
+git pull origin main
+
+# 重新部署
+./deploy-production.sh
+```
+
+## 🔐 安全建议
+
+1. **修改默认密码**：确保修改所有默认密码
+2. **使用HTTPS**：生产环境建议配置SSL证书
+3. **定期更新**：定期更新系统和依赖包
+4. **备份数据**：定期备份MongoDB数据
+5. **监控日志**：定期检查服务日志
+
+## 📚 更多资源
+
+- **项目文档**: 查看项目根目录下的其他文档文件
+- **API文档**: 访问 http://你的服务器IP:3001/api-docs
+- **GitHub仓库**: https://github.com/skings-eng/aiagent
+- **问题反馈**: 在GitHub上提交Issue
 
 ## 📞 技术支持
 
-如果遇到问题，请：
+如果遇到问题：
 1. 查看本文档的故障排除部分
 2. 检查服务日志：`pm2 logs`
-3. 提交Issue到GitHub仓库
+3. 在GitHub仓库提交Issue
+4. 发送邮件到技术支持邮箱
 
 ## 📄 开源许可
 
@@ -493,6 +531,8 @@ curl http://你的服务器IP:3001/health
 
 ---
 
-🎉 **恭喜！你已经成功搭建了智能投资助手开发环境！**
+🎉 **恭喜！你已经成功部署了AI智能投资助手！**
 
-现在可以开始使用AI助手进行股票分析了！
+现在可以通过浏览器访问 http://你的服务器IP:4173 开始使用AI助手进行股票分析了！
+
+**记住要将文档中的 `你的服务器IP` 替换为你的实际服务器IP地址！**
