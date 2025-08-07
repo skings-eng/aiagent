@@ -146,6 +146,30 @@ if ! npm run build; then
 fi
 cd ../..
 
+# Setup MCP server
+log_info "Setting up MCP server..."
+cd backend/api/mcp-yfinance-server
+
+# Check if virtual environment exists, if not create it
+if [ ! -d "venv" ]; then
+    log_info "Creating Python virtual environment for MCP server..."
+    python3 -m venv venv
+fi
+
+# Activate virtual environment and install dependencies
+log_info "Installing MCP server dependencies..."
+source venv/bin/activate
+if [ -f "requirements.txt" ]; then
+    pip install -r requirements.txt
+else
+    log_warning "No requirements.txt found for MCP server"
+fi
+
+# Make start script executable
+chmod +x start_mcp.sh
+
+cd ../../..
+
 # Additional build verification with detailed logging
 log_info "Checking build directories..."
 ls -la backend/api/ | grep dist || log_info "No dist directory in backend/api"
