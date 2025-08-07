@@ -250,7 +250,7 @@ EOF
         
         # 启动前端服务
         log_info "启动前端服务..."
-        pm2 start --name "aiagent-frontend" npm -- run preview -- --port 3000 --host 0.0.0.0 || log_warning "前端服务器可能已在运行"
+        pm2 start --name "aiagent-frontend" npm -- run preview -- --port 4173 --host 0.0.0.0 || log_warning "前端服务器可能已在运行"
         
         cd ../..
         
@@ -271,9 +271,9 @@ show_status() {
     
     echo
     log_info "🌐 访问地址:"
-    echo "  📱 网页版: http://localhost:3000 (如果启用了前端服务)"
+    echo "  📱 网页版: http://localhost:4173 (如果启用了前端服务)"
     echo "  🔌 API接口: http://localhost:3001"
-    echo "  💬 LINE Bot: http://localhost:3002 (如果已配置)"
+    echo "  💬 LINE Bot: http://localhost:3003 (如果已配置)"
     echo
     
     log_info "🔧 常用命令:"
@@ -284,7 +284,7 @@ show_status() {
     echo
     
     log_info "🎯 快速测试:"
-    echo "  1. 浏览器访问: http://你的服务器IP:3000"
+    echo "  1. 浏览器访问: http://你的服务器IP:4173"
     echo "  2. API健康检查: curl http://localhost:3001/health"
     echo "  3. 在网页上发送消息测试AI功能"
     echo
