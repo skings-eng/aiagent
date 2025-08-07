@@ -164,7 +164,7 @@ EOF
 #### 4.3 配置前端环境变量
 ```bash
 # 创建前端环境配置文件
-cat > frontend/c-end/.env << 'EOF'
+cat > frontend/b-end/.env << 'EOF'
 VITE_API_BASE_URL=http://你的服务器IP:3001
 VITE_GEMINI_API_KEY=你的Gemini_API密钥
 EOF
