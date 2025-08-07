@@ -7,4 +7,4 @@
 - [x] update-package-json: 修改根目录package.json移除b-end相关脚本 (priority: Medium)
 - [x] create-deploy-script: 创建生产环境部署脚本 (priority: Medium)
 - [x] local-test: 本地测试优化后的项目 (priority: Medium)
-- [ ] git-commit: 提交所有更改到git (**IN PROGRESS**) (priority: Low)
+- [x] git-commit: 提交所有更改到git (priority: Low)
