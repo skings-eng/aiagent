@@ -6,14 +6,17 @@
   "workspaces": [
     "backend/api",
     "backend/line",
+    "frontend/b-end",
     "shared"
   ],
   "scripts": {
-    "dev": "npm run dev:api",
+    "dev": "concurrently \"npm run dev:frontend\" \"npm run dev:api\"",
+    "dev:frontend": "cd frontend/b-end && npm run dev",
     "dev:api": "cd backend/api && npm run dev",
     "dev:line": "cd backend/line && npm run dev",
-    "build": "npm run build:shared && npm run build:backend",
+    "build": "npm run build:shared && npm run build:frontend && npm run build:backend",
     "build:shared": "cd shared && npm run build",
+    "build:frontend": "cd frontend/b-end && npm run build",
     "build:backend": "npm run build:api && npm run build:line",
     "build:api": "cd backend/api && npm run build",
     "build:line": "cd backend/line && npm run build",

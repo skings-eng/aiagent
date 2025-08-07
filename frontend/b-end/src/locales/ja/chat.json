@@ -1,0 +1,90 @@
+{
+  "title": "AI株式分析チャット",
+  "subtitle": "AIアシスタントと株式について話しましょう",
+  "welcome": {
+    "title": "AI株式分析アシスタントへようこそ！",
+    "description": "株式市場の分析、投資戦略、リアルタイムデータについて何でもお聞きください。"
+  },
+  "features": {
+    "analysis": {
+      "title": "📊 株式分析",
+      "description": "個別銘柄の詳細分析とテクニカル指標"
+    },
+    "qa": {
+      "title": "💡 スマート質問応答",
+      "description": "投資に関する質問に専門的に回答"
+    },
+    "insights": {
+      "title": "🔍 市場インサイト",
+      "description": "最新の市場動向と投資機会の発見"
+    },
+    "alerts": {
+      "title": "⚡ リアルタイム通知",
+      "description": "重要な市場変動の即座な通知"
+    }
+  },
+  "quickActions": {
+    "title": "クイックアクション",
+    "analyzeStock": "株式を分析",
+    "marketTrends": "市場トレンド",
+    "portfolioAdvice": "ポートフォリオアドバイス",
+    "riskAssessment": "リスク評価"
+  },
+  "input": {
+    "placeholder": "株式について質問してください...",
+    "send": "送信",
+    "thinking": "考え中...",
+    "typing": "入力中..."
+  },
+  "messages": {
+    "you": "あなた",
+    "assistant": "AIアシスタント",
+    "error": "申し訳ございません。エラーが発生しました。もう一度お試しください。",
+    "retry": "再試行",
+    "copy": "コピー",
+    "copied": "コピーしました！"
+  },
+  "stockCard": {
+    "price": "価格",
+    "change": "変動",
+    "volume": "出来高",
+    "marketCap": "時価総額",
+    "pe": "PER",
+    "dividend": "配当利回り",
+    "viewDetails": "詳細を見る",
+    "addToWatchlist": "ウォッチリストに追加"
+  },
+  "examples": {
+    "title": "質問例",
+    "items": [
+      "トヨタ自動車の株価分析をお願いします",
+      "今日の日経平均の動向は？",
+      "テクノロジー株の投資戦略を教えて",
+      "リスク管理のベストプラクティスは？"
+    ]
+  },
+  "status": {
+    "online": "オンライン",
+    "offline": "オフライン",
+    "connecting": "接続中..."
+  },
+  "line": {
+    "promotion": {
+      "title": "LINE公式アカウント",
+      "description": "リアルタイム株価情報と専門家の分析をお届けします",
+      "button": "友達追加",
+      "features": {
+        "realtime": "📊 リアルタイム株価通知",
+        "reports": "📈 限定投資レポート",
+        "analysis": "💡 専門家の分析"
+      }
+    },
+    "insider": {
+      "title": "企業内部情報",
+      "exclusive": "独占情報",
+      "hidden": "内容は非表示",
+      "guide": "内部情報はLINE追加後にご確認ください",
+      "advisor": "プロの投資アドバイザーによる1対1指導"
+    }
+  }
+}
