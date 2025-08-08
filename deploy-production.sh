@@ -195,37 +195,52 @@ fi
 
 # Activate virtual environment and install dependencies
 log_info "Installing MCP server dependencies..."
+log_info "Activating Python virtual environment..."
 source venv/bin/activate
+log_info "Virtual environment activated: $(which python)"
 
 # Upgrade pip first
-pip install --upgrade pip
+log_info "Upgrading pip..."
+pip install --upgrade pip --quiet
+log_info "Pip upgraded successfully"
 
 # Set pip timeout and retry options
 export PIP_DEFAULT_TIMEOUT=60
 export PIP_RETRIES=3
+log_info "Starting dependency installation (this may take a few minutes)..."
 
 if [ -f "requirements.txt" ]; then
     log_info "Installing from requirements.txt with timeout (max 5 minutes)..."
-    if timeout 300 pip install -r requirements.txt --timeout 60 --progress-bar off; then
+    if timeout 300 pip install -r requirements.txt --timeout 60 --progress-bar off 2>&1; then
         log_info "MCP server dependencies installed successfully from requirements.txt"
+        sync  # Force flush filesystem buffers
     else
         log_warn "Requirements.txt installation failed or timed out, trying basic dependencies"
-        if timeout 180 pip install yfinance mcp --timeout 60 --progress-bar off; then
+        if timeout 180 pip install yfinance mcp --timeout 60 --progress-bar off 2>&1; then
             log_info "Basic MCP dependencies installed successfully"
+            sync  # Force flush filesystem buffers
         else
             log_error "Failed to install MCP dependencies, continuing without MCP service"
             touch .mcp_install_failed
+            sync  # Force flush filesystem buffers
         fi
     fi
 else
     log_warn "No requirements.txt found for MCP server, installing basic dependencies"
-    if timeout 180 pip install yfinance mcp --timeout 60 --progress-bar off; then
+    if timeout 180 pip install yfinance mcp --timeout 60 --progress-bar off 2>&1; then
         log_info "Basic MCP dependencies installed successfully"
+        sync  # Force flush filesystem buffers
     else
         log_error "Failed to install MCP dependencies, continuing without MCP service"
         touch .mcp_install_failed
+        sync  # Force flush filesystem buffers
     fi
 fi
+
+# Force exit from pip installation to prevent hanging
+log_info "MCP dependency installation completed, continuing with deployment..."
+sync  # Force flush all buffers
+sleep 1  # Brief pause to ensure completion
 
 # Verify Python script exists
 if [ ! -f "demo_stock_price_server.py" ]; then
@@ -243,8 +258,12 @@ if [ -f "start_mcp.sh" ]; then
     chmod +x start_mcp.sh
 fi
 
-deactivate
+log_info "Exiting Python virtual environment..."
+deactivate || true  # Don't fail if deactivate fails
+sync  # Force flush filesystem buffers
+log_info "Virtual environment deactivated, returning to project root..."
 cd ../../..
+log_info "Returned to project directory: $(pwd)"
 
 # Additional build verification with detailed logging
 log_info "Checking build directories..."
