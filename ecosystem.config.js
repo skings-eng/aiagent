@@ -3,7 +3,7 @@ module.exports = {
     {
       name: 'aiagent-api',
       script: './backend/api/dist/server.js',
-      cwd: process.env.PROJECT_ROOT || '/home/ubuntu/aiagent',
+      cwd: process.env.PROJECT_ROOT || '/root/aiagent',
       env: {
         NODE_ENV: 'production',
         PORT: 8001
@@ -24,7 +24,7 @@ module.exports = {
     {
       name: 'aiagent-line',
       script: './backend/line/dist/index.js',
-      cwd: process.env.PROJECT_ROOT || '/home/ubuntu/aiagent',
+      cwd: process.env.PROJECT_ROOT || '/root/aiagent',
       env: {
         NODE_ENV: 'production',
         PORT: 8002
@@ -46,7 +46,7 @@ module.exports = {
       name: 'aiagent-frontend',
       script: 'npm',
       args: 'run preview',
-      cwd: (process.env.PROJECT_ROOT || '/home/ubuntu/aiagent') + '/frontend/b-end',
+      cwd: (process.env.PROJECT_ROOT || '/root/aiagent') + '/frontend/b-end',
       env: {
         NODE_ENV: 'production',
         PORT: 4173
@@ -67,7 +67,7 @@ module.exports = {
     {
       name: 'aiagent-mcp',
       script: './backend/api/mcp-yfinance-server/start_mcp.sh',
-      cwd: process.env.PROJECT_ROOT || '/home/ubuntu/aiagent',
+      cwd: process.env.PROJECT_ROOT || '/root/aiagent',
       instances: 1,
       exec_mode: 'fork',
       watch: false,
