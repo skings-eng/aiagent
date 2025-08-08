@@ -4,6 +4,13 @@
 # This script deploys the AI Agent application with only b-end frontend
 
 set -e  # Exit on any error
+set -o pipefail  # Exit on pipe failures
+
+# Enable debug mode if DEBUG=1 is set
+if [[ "${DEBUG:-0}" == "1" ]]; then
+    set -x  # Print commands as they are executed
+    log_info "Debug mode enabled - all commands will be printed"
+fi
 
 echo "🚀 Starting production deployment..."
 
@@ -196,13 +203,24 @@ fi
 # Activate virtual environment and install dependencies
 log_info "Installing MCP server dependencies..."
 log_info "Activating Python virtual environment..."
-source venv/bin/activate
-log_info "Virtual environment activated: $(which python)"
+source venv/bin/activate || {
+    log_error "Failed to activate virtual environment"
+    exit 1
+}
+log_info "Virtual environment activated successfully: $(which python)"
+log_info "Python version in venv: $(python --version)"
+log_info "Pip version in venv: $(pip --version)"
 
 # Upgrade pip first
-log_info "Upgrading pip..."
-pip install --upgrade pip --quiet
-log_info "Pip upgraded successfully"
+log_info "Upgrading pip (this may take a moment)..."
+if timeout 120 pip install --upgrade pip --quiet 2>&1; then
+    log_info "Pip upgraded successfully"
+    log_info "New pip version: $(pip --version)"
+else
+    log_warn "Pip upgrade failed or timed out, but continuing with existing version"
+    log_info "Current pip version: $(pip --version)"
+fi
+sync  # Force flush filesystem buffers
 
 # Set pip timeout and retry options
 export PIP_DEFAULT_TIMEOUT=60
@@ -210,32 +228,42 @@ export PIP_RETRIES=3
 log_info "Starting dependency installation (this may take a few minutes)..."
 
 if [ -f "requirements.txt" ]; then
-    log_info "Installing from requirements.txt with timeout (max 5 minutes)..."
+    log_info "Found requirements.txt, installing dependencies with timeout (max 5 minutes)..."
+    log_info "Starting pip install from requirements.txt..."
     if timeout 300 pip install -r requirements.txt --timeout 60 --progress-bar off 2>&1; then
         log_info "MCP server dependencies installed successfully from requirements.txt"
         sync  # Force flush filesystem buffers
+        log_info "Dependencies installation completed, flushing buffers..."
     else
         log_warn "Requirements.txt installation failed or timed out, trying basic dependencies"
+        log_info "Starting fallback installation of basic dependencies..."
         if timeout 180 pip install yfinance mcp --timeout 60 --progress-bar off 2>&1; then
             log_info "Basic MCP dependencies installed successfully"
             sync  # Force flush filesystem buffers
+            log_info "Basic dependencies installation completed, flushing buffers..."
         else
             log_error "Failed to install MCP dependencies, continuing without MCP service"
             touch .mcp_install_failed
             sync  # Force flush filesystem buffers
+            log_info "Created failure marker file, flushing buffers..."
         fi
     fi
 else
     log_warn "No requirements.txt found for MCP server, installing basic dependencies"
+    log_info "Starting installation of basic dependencies (yfinance, mcp)..."
     if timeout 180 pip install yfinance mcp --timeout 60 --progress-bar off 2>&1; then
         log_info "Basic MCP dependencies installed successfully"
         sync  # Force flush filesystem buffers
+        log_info "Basic dependencies installation completed, flushing buffers..."
     else
         log_error "Failed to install MCP dependencies, continuing without MCP service"
         touch .mcp_install_failed
         sync  # Force flush filesystem buffers
+        log_info "Created failure marker file, flushing buffers..."
     fi
 fi
+
+log_info "All dependency installation attempts completed"
 
 # Force exit from pip installation to prevent hanging
 log_info "MCP dependency installation completed, continuing with deployment..."
@@ -243,27 +271,43 @@ sync  # Force flush all buffers
 sleep 1  # Brief pause to ensure completion
 
 # Verify Python script exists
+log_info "Verifying MCP server script exists..."
 if [ ! -f "demo_stock_price_server.py" ]; then
     log_error "demo_stock_price_server.py not found in MCP server directory"
     exit 1
 fi
+log_info "MCP server script found: demo_stock_price_server.py"
 
-# Test Python script syntax
-if ! python demo_stock_price_server.py --help > /dev/null 2>&1; then
-    log_warn "MCP server script may have issues, but continuing..."
+# Test Python script syntax with timeout
+log_info "Testing MCP server script syntax (timeout: 10 seconds)..."
+if ! timeout 10 python demo_stock_price_server.py --help > /dev/null 2>&1; then
+    log_warn "MCP server script test failed or timed out, but continuing..."
+else
+    log_info "MCP server script syntax test passed"
 fi
+log_info "MCP server script test completed"
 
 # Make start script executable if it exists
+log_info "Checking for start_mcp.sh script..."
 if [ -f "start_mcp.sh" ]; then
     chmod +x start_mcp.sh
+    log_info "Made start_mcp.sh executable"
+else
+    log_info "No start_mcp.sh script found (optional)"
 fi
 
 log_info "Exiting Python virtual environment..."
 deactivate || true  # Don't fail if deactivate fails
 sync  # Force flush filesystem buffers
-log_info "Virtual environment deactivated, returning to project root..."
-cd ../../..
-log_info "Returned to project directory: $(pwd)"
+log_info "Virtual environment deactivated successfully"
+
+log_info "Changing directory back to project root..."
+cd ../../.. || {
+    log_error "Failed to change back to project root"
+    exit 1
+}
+log_info "Successfully returned to project directory: $(pwd)"
+log_info "MCP server setup completed, proceeding to build verification..."
 
 # Additional build verification with detailed logging
 log_info "Checking build directories..."
