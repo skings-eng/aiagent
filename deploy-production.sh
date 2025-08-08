@@ -128,13 +128,19 @@ if ! npm install; then
 fi
 cd ..
 
-# Clean previous build files
-log_info "Cleaning previous build files..."
+# Clean previous build files and node_modules
+log_info "Cleaning previous build files and node_modules..."
 rm -rf backend/api/dist
 rm -rf backend/line/dist
 rm -rf frontend/b-end/dist
 rm -rf shared/dist
-log_info "Previous build files cleaned"
+rm -rf backend/api/node_modules
+rm -rf backend/line/node_modules
+rm -rf frontend/b-end/node_modules
+rm -rf shared/node_modules
+rm -rf node_modules
+npm cache clean --force
+log_info "Previous build files and node_modules cleaned"
 
 # Build the application
 log_info "Building shared modules..."
@@ -149,14 +155,8 @@ log_info "Reinstalling backend API dependencies (to ensure shared module linking
 cd backend/api
 npm install
 log_info "Building backend API..."
-echo "Current directory: $(pwd)"
-echo "Node.js version: $(node --version)"
-echo "npm version: $(npm --version)"
-echo "TypeScript version: $(npx tsc --version)"
 if ! npm run build; then
     log_error "Backend API build failed"
-    echo "Checking for TypeScript compilation errors..."
-    npx tsc --noEmit || echo "TypeScript check failed"
     exit 1
 fi
 cd ../..
@@ -165,20 +165,16 @@ log_info "Reinstalling backend LINE dependencies (to ensure shared module linkin
 cd backend/line
 npm install
 log_info "Building backend LINE..."
-echo "Current directory: $(pwd)"
-echo "Node.js version: $(node --version)"
-echo "npm version: $(npm --version)"
-echo "TypeScript version: $(npx tsc --version)"
 if ! npm run build; then
     log_error "Backend LINE build failed"
-    echo "Checking for TypeScript compilation errors..."
-    npx tsc --noEmit || echo "TypeScript check failed"
     exit 1
 fi
 cd ../..
 
-log_info "Building frontend..."
+log_info "Reinstalling frontend dependencies (to ensure all packages are available)..."
 cd frontend/b-end
+npm install
+log_info "Building frontend..."
 if ! npm run build; then
     log_error "Frontend build failed"
     exit 1

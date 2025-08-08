@@ -97,6 +97,14 @@ class MCPStockClient {
     return this.callMCPToolWithRetry('get_comprehensive_stock_data', { symbol });
   }
 
+  async getFundamentalData(symbol: string): Promise<MCPToolResult> {
+    return this.callMCPToolWithRetry('get_fundamental_data', { symbol });
+  }
+
+  async getComprehensiveStockData(symbol: string): Promise<MCPToolResult> {
+    return this.callMCPToolWithRetry('get_comprehensive_stock_data', { symbol });
+  }
+
   async getComprehensiveAnalysis(symbol: string): Promise<MCPToolResult> {
     try {
       logger.info('开始获取综合股票分析', { symbol });
