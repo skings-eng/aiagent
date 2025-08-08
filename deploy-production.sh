@@ -10,7 +10,7 @@ echo "🚀 Starting production deployment..."
 # Configuration
 SERVER_HOST="172.237.20.24"
 FRONTEND_PORT="4173"
-API_PORT="3001"
+API_PORT="8001"
 LINE_PORT="3003"
 PROJECT_DIR="/root/aiagent"
 NODE_ENV="production"
