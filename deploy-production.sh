@@ -143,8 +143,10 @@ npm cache clean --force
 log_info "Previous build files and node_modules cleaned"
 
 # Build the application
-log_info "Building shared modules..."
+log_info "Installing shared dependencies..."
 cd shared
+npm install
+log_info "Building shared modules..."
 if ! npm run build; then
     log_error "Shared build failed"
     exit 1
