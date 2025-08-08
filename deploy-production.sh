@@ -416,6 +416,28 @@ module.exports = {
       autorestart: true,
       max_restarts: 10,
       min_uptime: '10s'
+    },
+    {
+      name: 'aiagent-mcp',
+      script: 'python3',
+      args: 'demo_stock_price_server.py',
+      cwd: '${PROJECT_DIR}/backend/api/mcp-yfinance-server',
+      interpreter: 'python3',
+      env: {
+        NODE_ENV: 'production',
+        PYTHONPATH: '${PROJECT_DIR}/backend/api/mcp-yfinance-server/venv/lib/python3.13/site-packages'
+      },
+      instances: 1,
+      exec_mode: 'fork',
+      watch: false,
+      max_memory_restart: '256M',
+      error_file: '/var/log/aiagent/mcp-error.log',
+      out_file: '/var/log/aiagent/mcp-out.log',
+      log_file: '/var/log/aiagent/mcp.log',
+      time: true,
+      autorestart: true,
+      max_restarts: 10,
+      min_uptime: '10s'
     }
   ]
 };
@@ -427,6 +449,7 @@ echo "PM2 will use the following paths:"
 echo "API script: ${PROJECT_DIR}/backend/api/dist/server.js"
 echo "LINE script: ${PROJECT_DIR}/backend/line/dist/index.js"
 echo "Frontend working directory: ${PROJECT_DIR}/frontend/b-end"
+echo "MCP server script: ${PROJECT_DIR}/backend/api/mcp-yfinance-server/demo_stock_price_server.py"
 
 # Verify absolute paths that PM2 will use
 if [[ ! -f "${PROJECT_DIR}/backend/api/dist/server.js" ]]; then
@@ -452,6 +475,17 @@ fi
 # Check if preview script exists in frontend package.json
 if ! grep -q '"preview"' "${PROJECT_DIR}/frontend/b-end/package.json"; then
     log_error "PM2 startup will fail - 'preview' script not found in frontend/b-end/package.json"
+    exit 1
+fi
+
+# Verify MCP server files
+if [[ ! -f "${PROJECT_DIR}/backend/api/mcp-yfinance-server/demo_stock_price_server.py" ]]; then
+    log_error "PM2 startup will fail - MCP server script not found: ${PROJECT_DIR}/backend/api/mcp-yfinance-server/demo_stock_price_server.py"
+    exit 1
+fi
+
+if [[ ! -d "${PROJECT_DIR}/backend/api/mcp-yfinance-server/venv" ]]; then
+    log_error "PM2 startup will fail - MCP server virtual environment not found: ${PROJECT_DIR}/backend/api/mcp-yfinance-server/venv"
     exit 1
 fi
 
@@ -509,6 +543,14 @@ else
     pm2 logs aiagent-line --lines 20
 fi
 
+# Check MCP service
+if pm2 describe aiagent-mcp | grep -q "online"; then
+    log_info "✅ MCP service is running"
+else
+    log_error "❌ MCP service is not running"
+    pm2 logs aiagent-mcp --lines 20
+fi
+
 # Display service status
 log_info "Service status:"
 pm2 status
@@ -517,6 +559,7 @@ log_info "🎉 Deployment completed!"
 log_info "Frontend: http://${SERVER_HOST}:${FRONTEND_PORT}"
 log_info "API: http://${SERVER_HOST}:${API_PORT}"
 log_info "LINE Service: http://${SERVER_HOST}:${LINE_PORT}"
+log_info "MCP Service: Running as background process"
 log_info "API Health: http://${SERVER_HOST}:${API_PORT}/api/v1/health"
 log_info "LINE Health: http://${SERVER_HOST}:${LINE_PORT}/health"
 
@@ -524,6 +567,8 @@ echo ""
 log_info "Useful commands:"
 echo "  pm2 status                 - Check service status"
 echo "  pm2 logs                   - View all logs"
+echo "  pm2 logs aiagent-mcp       - View MCP service logs"
+echo "  pm2 restart aiagent-mcp    - Restart MCP service"
 echo "  pm2 logs aiagent-api       - View API logs"
 echo "  pm2 logs aiagent-frontend  - View frontend logs"
 echo "  pm2 logs aiagent-line      - View LINE service logs"
