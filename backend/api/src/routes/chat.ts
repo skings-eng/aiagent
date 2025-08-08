@@ -393,12 +393,52 @@ router.post('/',
           aiResponse = `您好！我是您的日本股市分析AI助手。请告诉我您想分析的股票代码或公司名称，例如 '丰田汽车' 或 '7203.T'，我将为您提供详细的分析报告。`;
         }
       } catch (error) {
-        logger.error('Gemini API call failed, using fallback response', {
-          error: error instanceof Error ? error.message : String(error)
-        });
+        // Enhanced error logging with detailed information
+        const errorDetails = {
+          timestamp: new Date().toISOString(),
+          userId: userId,
+          errorType: error instanceof Error ? error.constructor.name : 'Unknown',
+          errorMessage: error instanceof Error ? error.message : String(error),
+          errorStack: error instanceof Error ? error.stack : undefined,
+          geminiConfig: {
+            hasApiKey: !!geminiConfig.apiKey,
+            model: geminiConfig.model,
+            apiKeyLength: geminiConfig.apiKey ? geminiConfig.apiKey.length : 0
+          },
+          requestInfo: {
+            messageLength: message.length,
+            historyLength: history.length,
+            userAgent: req.get('User-Agent'),
+            ip: req.ip
+          }
+        };
+
+        logger.error('Gemini API call failed, using fallback response', errorDetails);
         
         // Fallback response when Gemini API is not accessible
         aiResponse = `抱歉，目前无法连接到AI服务。这可能是由于网络连接问题。请稍后再试。\n\n如果您需要股票信息，建议您：\n1. 检查网络连接\n2. 稍后重试\n3. 联系技术支持\n\n感谢您的理解。`;
+        
+        // Enhanced console log with detailed AI service error information
+        console.log('=== AI Service Connection Error - Detailed Log ===');
+        console.log('Timestamp:', errorDetails.timestamp);
+        console.log('User ID:', errorDetails.userId);
+        console.log('Error Type:', errorDetails.errorType);
+        console.log('Error Message:', errorDetails.errorMessage);
+        console.log('Gemini Config Status:');
+        console.log('  - Has API Key:', errorDetails.geminiConfig.hasApiKey);
+        console.log('  - Model:', errorDetails.geminiConfig.model);
+        console.log('  - API Key Length:', errorDetails.geminiConfig.apiKeyLength);
+        console.log('Request Info:');
+        console.log('  - Message Length:', errorDetails.requestInfo.messageLength);
+        console.log('  - History Length:', errorDetails.requestInfo.historyLength);
+        console.log('  - User Agent:', errorDetails.requestInfo.userAgent);
+        console.log('  - IP Address:', errorDetails.requestInfo.ip);
+        if (errorDetails.errorStack) {
+          console.log('Error Stack:');
+          console.log(errorDetails.errorStack);
+        }
+        console.log('Fallback Response:', aiResponse);
+        console.log('=== End of AI Service Error Log ===');
       }
       
       logger.info('Received response from Gemini API', {
@@ -410,6 +450,16 @@ router.post('/',
         userId,
         responseLength: aiResponse.length
       });
+
+      // Check if response contains AI service connection error message and log to console
+      if (aiResponse.includes('抱歉，目前无法连接到AI服务')) {
+        console.log('AI Service Connection Error Response:', {
+          timestamp: new Date().toISOString(),
+          userId: userId,
+          message: 'Returning AI service connection error response to user',
+          response: aiResponse
+        });
+      }
 
       // Check if LINE promotion should be shown
       const linePromotionResult = await checkLinePromotionTrigger(userId, message, aiResponse, history);

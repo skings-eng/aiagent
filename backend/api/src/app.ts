@@ -246,12 +246,18 @@ process.on('uncaughtException', (err: Error) => {
 // Initialize Gemini API key from environment variable
 const initializeGeminiFromEnv = async () => {
   try {
-    const envApiKey = process.env.GOOGLE_AI_API_KEY;
+    // Try GOOGLE_API_KEY first (recommended by Google Gen AI SDK), then fallback to GOOGLE_AI_API_KEY
+    const envApiKey = process.env.GOOGLE_API_KEY || process.env.GOOGLE_AI_API_KEY;
     
     if (!envApiKey) {
-      logger.info('No GOOGLE_AI_API_KEY found in environment variables');
+      logger.info('No GOOGLE_API_KEY or GOOGLE_AI_API_KEY found in environment variables');
       return;
     }
+    
+    logger.info('Found Gemini API key in environment variables', {
+      keySource: process.env.GOOGLE_API_KEY ? 'GOOGLE_API_KEY' : 'GOOGLE_AI_API_KEY',
+      keyLength: envApiKey.length
+    });
     
     // Check if API key already exists in database
     const existingSetting = await Settings.getByKey('ai', 'gemini_api_key');

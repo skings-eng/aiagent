@@ -1,0 +1,16 @@
+{
+  "name": "AI株式分析チャット",
+  "short_name": "AI株式分析",
+  "description": "AIを使った株式分析チャットアプリケーション",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#3b82f6",
+  "icons": [
+    {
+      "src": "/favicon.ico",
+      "sizes": "any",
+      "type": "image/x-icon"
+    }
+  ]
+}
