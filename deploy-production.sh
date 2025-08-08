@@ -196,15 +196,35 @@ fi
 # Activate virtual environment and install dependencies
 log_info "Installing MCP server dependencies..."
 source venv/bin/activate
+
+# Upgrade pip first
+pip install --upgrade pip
+
 if [ -f "requirements.txt" ]; then
     pip install -r requirements.txt
+    log_info "MCP server dependencies installed successfully"
 else
-    log_warning "No requirements.txt found for MCP server"
+    log_warn "No requirements.txt found for MCP server, installing basic dependencies"
+    pip install yfinance mcp
 fi
 
-# Make start script executable
-chmod +x start_mcp.sh
+# Verify Python script exists
+if [ ! -f "demo_stock_price_server.py" ]; then
+    log_error "demo_stock_price_server.py not found in MCP server directory"
+    exit 1
+fi
 
+# Test Python script syntax
+if ! python demo_stock_price_server.py --help > /dev/null 2>&1; then
+    log_warn "MCP server script may have issues, but continuing..."
+fi
+
+# Make start script executable if it exists
+if [ -f "start_mcp.sh" ]; then
+    chmod +x start_mcp.sh
+fi
+
+deactivate
 cd ../../..
 
 # Additional build verification with detailed logging
@@ -351,6 +371,11 @@ log_info "Frontend service built successfully"
 # Return to project root
 cd "${PROJECT_DIR}"
 
+# Create log directory for PM2
+log_info "Creating log directory for PM2..."
+sudo mkdir -p /var/log/aiagent
+sudo chown $USER:$USER /var/log/aiagent
+
 # Create PM2 ecosystem file
 log_info "Creating PM2 ecosystem configuration..."
 cat > ecosystem.config.js << EOF
@@ -419,13 +444,11 @@ module.exports = {
     },
     {
       name: 'aiagent-mcp',
-      script: 'python3',
+      script: './venv/bin/python',
       args: 'demo_stock_price_server.py',
       cwd: '${PROJECT_DIR}/backend/api/mcp-yfinance-server',
-      interpreter: 'python3',
       env: {
-        NODE_ENV: 'production',
-        PYTHONPATH: '${PROJECT_DIR}/backend/api/mcp-yfinance-server/venv/lib/python3.13/site-packages'
+        NODE_ENV: 'production'
       },
       instances: 1,
       exec_mode: 'fork',
@@ -495,7 +518,48 @@ log_info "All PM2 paths verified successfully"
 log_info "Starting services with PM2..."
 # Set PROJECT_ROOT environment variable for PM2
 export PROJECT_ROOT="${PROJECT_DIR}"
-pm2 start ecosystem.config.js
+
+# Check if ecosystem.config.js exists
+if [[ ! -f "ecosystem.config.js" ]]; then
+    log_error "ecosystem.config.js not found in current directory: $(pwd)"
+    exit 1
+fi
+
+# Start PM2 services with error checking
+if ! pm2 start ecosystem.config.js; then
+    log_error "Failed to start PM2 services"
+    log_info "Current directory: $(pwd)"
+    log_info "ecosystem.config.js content:"
+    cat ecosystem.config.js
+    exit 1
+fi
+
+log_info "PM2 services started successfully"
+
+# Check PM2 service status immediately
+log_info "Checking PM2 service status..."
+pm2 status
+
+# Verify that services are actually running
+if ! pm2 describe aiagent-api | grep -q "online"; then
+    log_error "aiagent-api service failed to start"
+    pm2 logs aiagent-api --lines 10
+fi
+
+if ! pm2 describe aiagent-frontend | grep -q "online"; then
+    log_error "aiagent-frontend service failed to start"
+    pm2 logs aiagent-frontend --lines 10
+fi
+
+if ! pm2 describe aiagent-line | grep -q "online"; then
+    log_error "aiagent-line service failed to start"
+    pm2 logs aiagent-line --lines 10
+fi
+
+if ! pm2 describe aiagent-mcp | grep -q "online"; then
+    log_error "aiagent-mcp service failed to start"
+    pm2 logs aiagent-mcp --lines 10
+fi
 
 # Save PM2 configuration
 pm2 save
