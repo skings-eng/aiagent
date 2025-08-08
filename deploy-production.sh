@@ -12,7 +12,7 @@ SERVER_HOST="172.237.20.24"
 FRONTEND_PORT="4173"
 API_PORT="3001"
 LINE_PORT="3003"
-PROJECT_DIR="/home/ubuntu/aiagent"
+PROJECT_DIR="/root/aiagent"
 NODE_ENV="production"
 
 # Colors for output
