@@ -1,5 +1,7 @@
 #!/bin/bash
-cd /Users/sking/aiagent/backend/api/mcp-yfinance-server
+# 获取脚本所在目录的绝对路径
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+cd "$SCRIPT_DIR"
 
 # 确保虚拟环境被正确激活
 if [ -f "venv/bin/activate" ]; then
