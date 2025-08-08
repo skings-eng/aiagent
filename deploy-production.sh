@@ -200,12 +200,31 @@ source venv/bin/activate
 # Upgrade pip first
 pip install --upgrade pip
 
+# Set pip timeout and retry options
+export PIP_DEFAULT_TIMEOUT=60
+export PIP_RETRIES=3
+
 if [ -f "requirements.txt" ]; then
-    pip install -r requirements.txt
-    log_info "MCP server dependencies installed successfully"
+    log_info "Installing from requirements.txt with timeout (max 5 minutes)..."
+    if timeout 300 pip install -r requirements.txt --timeout 60 --progress-bar off; then
+        log_info "MCP server dependencies installed successfully from requirements.txt"
+    else
+        log_warn "Requirements.txt installation failed or timed out, trying basic dependencies"
+        if timeout 180 pip install yfinance mcp --timeout 60 --progress-bar off; then
+            log_info "Basic MCP dependencies installed successfully"
+        else
+            log_error "Failed to install MCP dependencies, continuing without MCP service"
+            touch .mcp_install_failed
+        fi
+    fi
 else
     log_warn "No requirements.txt found for MCP server, installing basic dependencies"
-    pip install yfinance mcp
+    if timeout 180 pip install yfinance mcp --timeout 60 --progress-bar off; then
+        log_info "Basic MCP dependencies installed successfully"
+    else
+        log_error "Failed to install MCP dependencies, continuing without MCP service"
+        touch .mcp_install_failed
+    fi
 fi
 
 # Verify Python script exists
@@ -378,7 +397,87 @@ sudo chown $USER:$USER /var/log/aiagent
 
 # Create PM2 ecosystem file
 log_info "Creating PM2 ecosystem configuration..."
-cat > ecosystem.config.js << EOF
+
+# Check if MCP installation failed
+MCP_FAILED=false
+if [ -f "backend/api/mcp-yfinance-server/.mcp_install_failed" ]; then
+    MCP_FAILED=true
+    log_warn "MCP service will be excluded from PM2 configuration due to installation failure"
+fi
+
+# Generate ecosystem.config.js with conditional MCP service
+if [ "$MCP_FAILED" = true ]; then
+    # Generate config without MCP service
+    cat > ecosystem.config.js << EOF
+module.exports = {
+  apps: [
+    {
+      name: 'aiagent-api',
+      script: './backend/api/dist/server.js',
+      cwd: '${PROJECT_DIR}',
+      env: {
+        NODE_ENV: 'production',
+        PORT: ${API_PORT}
+      },
+      instances: 1,
+      exec_mode: 'fork',
+      watch: false,
+      max_memory_restart: '1G',
+      error_file: '/var/log/aiagent/api-error.log',
+      out_file: '/var/log/aiagent/api-out.log',
+      log_file: '/var/log/aiagent/api.log',
+      time: true,
+      autorestart: true,
+      max_restarts: 10,
+      min_uptime: '10s'
+    },
+    {
+      name: 'aiagent-frontend',
+      script: 'npm',
+      args: 'run preview',
+      cwd: '${PROJECT_DIR}/frontend/b-end',
+      env: {
+        NODE_ENV: 'production',
+        PORT: ${FRONTEND_PORT},
+        HOST: '0.0.0.0'
+      },
+      instances: 1,
+      exec_mode: 'fork',
+      watch: false,
+      error_file: '/var/log/aiagent/frontend-error.log',
+      out_file: '/var/log/aiagent/frontend-out.log',
+      log_file: '/var/log/aiagent/frontend.log',
+      time: true,
+      autorestart: true,
+      max_restarts: 10,
+      min_uptime: '10s'
+    },
+    {
+      name: 'aiagent-line',
+      script: './backend/line/dist/index.js',
+      cwd: '${PROJECT_DIR}',
+      env: {
+        NODE_ENV: 'production',
+        PORT: ${LINE_PORT}
+      },
+      instances: 1,
+      exec_mode: 'fork',
+      watch: false,
+      max_memory_restart: '1G',
+      error_file: '/var/log/aiagent/line-error.log',
+      out_file: '/var/log/aiagent/line-out.log',
+      log_file: '/var/log/aiagent/line.log',
+      time: true,
+      autorestart: true,
+      max_restarts: 10,
+      min_uptime: '10s'
+    }
+  ]
+};
+EOF
+else
+    # Generate config with MCP service
+    cat > ecosystem.config.js << EOF
 module.exports = {
   apps: [
     {
@@ -465,6 +564,7 @@ module.exports = {
   ]
 };
 EOF
+fi
 
 # Final verification before PM2 startup
 log_info "Final verification before PM2 startup..."
@@ -556,9 +656,14 @@ if ! pm2 describe aiagent-line | grep -q "online"; then
     pm2 logs aiagent-line --lines 10
 fi
 
-if ! pm2 describe aiagent-mcp | grep -q "online"; then
-    log_error "aiagent-mcp service failed to start"
-    pm2 logs aiagent-mcp --lines 10
+# Check aiagent-mcp only if it was included in the configuration
+if [ "$MCP_FAILED" != true ]; then
+    if ! pm2 describe aiagent-mcp | grep -q "online"; then
+        log_error "aiagent-mcp service failed to start"
+        pm2 logs aiagent-mcp --lines 10
+    fi
+else
+    log_warn "Skipping MCP service check due to installation failure"
 fi
 
 # Save PM2 configuration
@@ -607,12 +712,16 @@ else
     pm2 logs aiagent-line --lines 20
 fi
 
-# Check MCP service
-if pm2 describe aiagent-mcp | grep -q "online"; then
-    log_info "✅ MCP service is running"
+# Check MCP service only if it was included in the configuration
+if [ "$MCP_FAILED" != true ]; then
+    if pm2 describe aiagent-mcp | grep -q "online"; then
+        log_info "✅ MCP service is running"
+    else
+        log_error "❌ MCP service is not running"
+        pm2 logs aiagent-mcp --lines 20
+    fi
 else
-    log_error "❌ MCP service is not running"
-    pm2 logs aiagent-mcp --lines 20
+    log_warn "⚠️ MCP service was skipped due to installation failure"
 fi
 
 # Display service status
@@ -623,7 +732,11 @@ log_info "🎉 Deployment completed!"
 log_info "Frontend: http://${SERVER_HOST}:${FRONTEND_PORT}"
 log_info "API: http://${SERVER_HOST}:${API_PORT}"
 log_info "LINE Service: http://${SERVER_HOST}:${LINE_PORT}"
-log_info "MCP Service: Running as background process"
+if [ "$MCP_FAILED" != true ]; then
+    log_info "MCP Service: Running as background process"
+else
+    log_warn "MCP Service: ⚠️ Skipped due to installation failure"
+fi
 log_info "API Health: http://${SERVER_HOST}:${API_PORT}/api/v1/health"
 log_info "LINE Health: http://${SERVER_HOST}:${LINE_PORT}/health"
 
@@ -631,8 +744,10 @@ echo ""
 log_info "Useful commands:"
 echo "  pm2 status                 - Check service status"
 echo "  pm2 logs                   - View all logs"
-echo "  pm2 logs aiagent-mcp       - View MCP service logs"
-echo "  pm2 restart aiagent-mcp    - Restart MCP service"
+if [ "$MCP_FAILED" != true ]; then
+    echo "  pm2 logs aiagent-mcp       - View MCP service logs"
+    echo "  pm2 restart aiagent-mcp    - Restart MCP service"
+fi
 echo "  pm2 logs aiagent-api       - View API logs"
 echo "  pm2 logs aiagent-frontend  - View frontend logs"
 echo "  pm2 logs aiagent-line      - View LINE service logs"
