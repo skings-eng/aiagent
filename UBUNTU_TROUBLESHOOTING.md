@@ -18,13 +18,35 @@ rm -rf backend/*/dist frontend/*/dist shared/dist
 ```
 
 **最新修复包括：**
-- ✅ 修复了 PM2 配置中的路径问题
+- ✅ 修复了 PM2 配置中的路径问题 ⭐ **关键修复**
 - ✅ 添加了 Node.js 版本检查
 - ✅ 添加了构建前清理步骤
 - ✅ 修复了 MCP 服务器配置
 - ✅ 修复了 `backend/api/package.json` 中 main 字段指向错误
 - ✅ 增强了 shared 模块依赖链接处理
 - ✅ 添加了详细的构建诊断日志
+
+## 已修复的问题
+
+1. **PM2项目路径配置错误** ⭐ **关键修复**
+   - 问题：`ecosystem.config.js` 中 `cwd` 路径设置为 `/home/ubuntu/aiagent`，但Ubuntu服务器实际路径为 `/root/aiagent`
+   - 修复：将所有服务的 `cwd` 路径从 `/home/ubuntu/aiagent` 修改为 `/root/aiagent`
+   - 影响：解决PM2 "Script not found" 错误，确保所有服务能正确启动
+
+2. **backend/api/package.json main字段指向错误**
+   - 问题：`main` 字段指向 `dist/index.js`，但实际入口文件是 `dist/server.js`
+   - 修复：将 `main` 字段修改为 `dist/server.js`
+   - 影响：确保PM2能正确找到API服务的入口文件
+
+3. **Shared模块依赖链接处理增强**
+   - 问题：Ubuntu服务器上 `shared` 模块可能未正确链接
+   - 修复：在构建前增加 `npm install` 步骤重新链接依赖
+   - 影响：确保本地文件依赖正确解析
+
+4. **详细构建诊断日志**
+   - 问题：构建失败时缺乏足够的诊断信息
+   - 修复：添加环境信息输出和TypeScript编译错误检查
+   - 影响：便于快速定位构建问题
 
 ## 问题概述
 
@@ -38,7 +60,7 @@ rm -rf backend/*/dist frontend/*/dist shared/dist
 ### 第一步：拉取最新代码
 
 ```bash
-cd /home/ubuntu/aiagent
+cd /root/aiagent
 git pull origin main
 ```
 
@@ -189,8 +211,8 @@ sudo apt install -y python3 python3-pip python3-venv
 
 ```bash
 # 确保用户对项目目录有完整权限
-sudo chown -R $USER:$USER /home/ubuntu/aiagent
-chmod -R 755 /home/ubuntu/aiagent
+sudo chown -R $USER:$USER /root/aiagent
+chmod -R 755 /root/aiagent
 ```
 
 ### 问题4：端口被占用
@@ -339,7 +361,7 @@ pm2 logs --lines 50
 
 3. 重新克隆项目（最后手段）：
    ```bash
-   cd /home/ubuntu
+   cd /root
    mv aiagent aiagent_backup
    git clone https://github.com/skings-eng/aiagent.git
    cd aiagent
