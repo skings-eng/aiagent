@@ -75,12 +75,12 @@ cd "${PROJECT_DIR}" || {
 
 # Stop existing services
 log_info "Stopping existing services..."
-pm2 stop aiagent-api || true
-pm2 stop aiagent-frontend || true
-pm2 stop aiagent-line || true
-pm2 delete aiagent-api || true
-pm2 delete aiagent-frontend || true
-pm2 delete aiagent-line || true
+pm2 stop aiagent-api 2>/dev/null || true
+pm2 stop aiagent-frontend 2>/dev/null || true
+pm2 stop aiagent-line 2>/dev/null || true
+pm2 delete aiagent-api 2>/dev/null || true
+pm2 delete aiagent-frontend 2>/dev/null || true
+pm2 delete aiagent-line 2>/dev/null || true
 
 # Kill processes on ports if they exist
 log_info "Cleaning up ports..."
