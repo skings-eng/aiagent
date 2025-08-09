@@ -193,39 +193,79 @@ class MCPStockClient {
     return new Promise((resolve, reject) => {
       const serverDir = path.dirname(this.serverPath);
       
-      // 创建临时脚本来调用MCP工具
-      const tempScript = `
-import sys
-sys.path.append('${serverDir}')
-from ${path.basename(this.serverPath, '.py')} import ${toolName}
-import json
-
-try:
-    args = ${JSON.stringify(args)}
-    if len(args) == 0:
-        result = ${toolName}()
-    elif len(args) == 1:
-        result = ${toolName}(list(args.values())[0])
-    elif len(args) == 2:
-        values = list(args.values())
-        result = ${toolName}(values[0], values[1])
-    else:
-        result = ${toolName}(**args)
-    print(json.dumps({"success": True, "result": result}))
-except Exception as e:
-    print(json.dumps({"success": False, "error": str(e)}))
-`;
-      
-      const child = spawn(this.pythonPath, ['-c', tempScript], {
+      // 启动MCP服务器进程
+      const child = spawn(this.pythonPath, [this.serverPath], {
         cwd: serverDir,
-        env: { ...process.env, PYTHONPATH: serverDir }
+        env: { ...process.env, PYTHONPATH: serverDir },
+        stdio: ['pipe', 'pipe', 'pipe']
       });
+      
+      // 构建MCP请求
+      const mcpRequest = {
+        jsonrpc: '2.0',
+        id: Date.now(),
+        method: 'tools/call',
+        params: {
+          name: toolName,
+          arguments: args
+        }
+      };
+      
+      // 发送初始化请求
+      const initRequest = {
+        jsonrpc: '2.0',
+        id: 1,
+        method: 'initialize',
+        params: {
+          protocolVersion: '2024-11-05',
+          capabilities: {
+            tools: {}
+          },
+          clientInfo: {
+            name: 'aiagent-api',
+            version: '1.0.0'
+          }
+        }
+      };
       
       let output = '';
       let errorOutput = '';
+      let initialized = false;
       
       child.stdout.on('data', (data) => {
         output += data.toString();
+        
+        // 处理可能的多行JSON响应
+        const lines = output.split('\n');
+        for (let i = 0; i < lines.length - 1; i++) {
+          const line = lines[i].trim();
+          if (line) {
+            try {
+              const response = JSON.parse(line);
+              
+              // 处理初始化响应
+              if (response.id === 1 && !initialized) {
+                initialized = true;
+                // 发送工具调用请求
+                child.stdin.write(JSON.stringify(mcpRequest) + '\n');
+              }
+              // 处理工具调用响应
+              else if (response.id === mcpRequest.id) {
+                if (response.error) {
+                  reject(new Error(response.error.message || 'MCP工具调用失败'));
+                } else {
+                  resolve(response.result?.content?.[0]?.text || response.result);
+                }
+                child.kill();
+                return;
+              }
+            } catch (parseError) {
+              // 忽略解析错误，继续等待完整的JSON
+            }
+          }
+        }
+        // 保留最后一行（可能是不完整的JSON）
+        output = lines[lines.length - 1];
       });
       
       child.stderr.on('data', (data) => {
@@ -239,16 +279,8 @@ except Exception as e:
           return;
         }
         
-        try {
-          const result = JSON.parse(output.trim());
-          if (result.success) {
-            resolve(result.result);
-          } else {
-            reject(new Error(result.error));
-          }
-        } catch (parseError) {
-          logger.error('解析MCP工具输出失败:', parseError, '原始输出:', output);
-          reject(new Error('解析MCP工具输出失败'));
+        if (!initialized) {
+          reject(new Error('MCP服务器初始化失败'));
         }
       });
       
@@ -256,6 +288,9 @@ except Exception as e:
         logger.error('启动MCP工具进程失败:', error);
         reject(error);
       });
+      
+      // 发送初始化请求
+      child.stdin.write(JSON.stringify(initRequest) + '\n');
       
       // 设置超时
       setTimeout(() => {

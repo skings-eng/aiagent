@@ -3,7 +3,7 @@ module.exports = {
     {
       name: 'aiagent-api',
       script: './backend/api/dist/server.js',
-      cwd: process.env.PROJECT_ROOT || '/root/aiagent',
+      cwd: process.env.PROJECT_ROOT || '/Users/sking/aiagent',
       env: {
         NODE_ENV: 'production',
         PORT: 8001
@@ -24,10 +24,10 @@ module.exports = {
     {
       name: 'aiagent-line',
       script: './backend/line/dist/index.js',
-      cwd: process.env.PROJECT_ROOT || '/root/aiagent',
+      cwd: process.env.PROJECT_ROOT || '/Users/sking/aiagent',
       env: {
         NODE_ENV: 'production',
-        PORT: 8002
+        PORT: 3003
       },
       instances: 1,
       exec_mode: 'fork',
@@ -45,11 +45,11 @@ module.exports = {
     {
       name: 'aiagent-frontend',
       script: 'npm',
-      args: 'run preview',
-      cwd: (process.env.PROJECT_ROOT || '/root/aiagent') + '/frontend/b-end',
+      args: 'run dev',
+      cwd: (process.env.PROJECT_ROOT || '/Users/sking/aiagent') + '/frontend/b-end',
       env: {
-        NODE_ENV: 'production',
-        PORT: 4173
+        NODE_ENV: 'development',
+        PORT: 3000
       },
       instances: 1,
       exec_mode: 'fork',
@@ -67,7 +67,7 @@ module.exports = {
     {
       name: 'aiagent-mcp',
       script: './backend/api/mcp-yfinance-server/start_mcp.sh',
-      cwd: process.env.PROJECT_ROOT || '/root/aiagent',
+      cwd: process.env.PROJECT_ROOT || '/Users/sking/aiagent',
       instances: 1,
       exec_mode: 'fork',
       watch: false,
