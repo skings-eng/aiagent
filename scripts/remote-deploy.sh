@@ -757,7 +757,7 @@ install_dependencies() {
     
     # 安装前端依赖
     echo "安装前端依赖..."
-    cd frontend/c-end && npm install && cd ../..
+    cd frontend/b-end && npm install && cd ../..
     
     log_success "依赖安装完成"
 }
@@ -879,8 +879,8 @@ module.exports = {
     {
       name: 'aiagent-frontend',
       script: 'npm',
-      args: 'run start',
-      cwd: '$DEPLOY_PATH/frontend/c-end',
+      args: 'run preview',
+      cwd: '$DEPLOY_PATH/frontend/b-end',
       env: {
         NODE_ENV: '$NODE_ENV',
         PORT: $FRONTEND_PORT
@@ -1202,7 +1202,7 @@ verify_deployment() {
     echo "=== 构建文件检查 ==="
     echo "API构建文件: $([ -f backend/api/dist/server.js ] && echo '存在' || echo '缺失')"
     echo "LINE构建文件: $([ -f backend/line/dist/index.js ] && echo '存在' || echo '缺失')"
-    echo "前端构建文件: $([ -d frontend/c-end/dist ] && echo '存在' || echo '缺失')"
+    echo "前端构建文件: $([ -d frontend/b-end/dist ] && echo '存在' || echo '缺失')"
     
     log_success "部署验证完成"
 }
