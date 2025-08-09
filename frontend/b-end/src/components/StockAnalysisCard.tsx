@@ -270,21 +270,22 @@ const StockAnalysisCard: React.FC<StockAnalysisCardProps> = ({ stockData, lineCo
             <div className="bg-gray-50 rounded p-3">
               <div className="flex justify-between items-center mb-1">
                 <span className="text-sm font-medium text-gray-600">趋势评分</span>
-                <span className="text-sm font-bold text-gray-900">{stockData.technical.trend_score}</span>
+                <span className="text-sm font-bold text-gray-900">{stockData.technical?.trend_score ?? '-'}</span>
               </div>
-              <p className="text-xs text-gray-700">{stockData.technical.trend_reason}</p>
+              -              <p className="text-xs text-gray-700">{stockData.technical?.trend_reason ?? '-'}</p>
+              +              <p className="text-xs text-gray-700">{stockData.technical?.trend_reason ?? '-'}</p>
             </div>
             <div className="grid grid-cols-2 gap-2">
               <div className="bg-gray-50 rounded p-2">
                 <span className="text-xs font-medium text-gray-600">RSI</span>
-                <div className="text-sm font-bold text-gray-900">{stockData.technical.rsi}</div>
+                <div className="text-sm font-bold text-gray-900">{stockData.technical?.rsi ?? '-'}</div>
               </div>
               <div className="bg-gray-50 rounded p-2">
                 <span className="text-xs font-medium text-gray-600">MACD</span>
-                <div className="text-sm font-bold text-gray-900">{stockData.technical.macd}</div>
+                <div className="text-sm font-bold text-gray-900">{stockData.technical?.macd ?? '-'}</div>
               </div>
             </div>
-            {stockData.technical.support_levels.length > 0 && (
+            {stockData.technical.support_levels?.length > 0 && (
               <div className="bg-green-50 rounded p-2">
                 <span className="text-xs font-medium text-green-700">支撑位</span>
                 <div className="text-sm text-green-800">
@@ -292,7 +293,7 @@ const StockAnalysisCard: React.FC<StockAnalysisCardProps> = ({ stockData, lineCo
                 </div>
               </div>
             )}
-            {stockData.technical.resistance_levels.length > 0 && (
+            {stockData.technical.resistance_levels?.length > 0 && (
               <div className="bg-red-50 rounded p-2">
                 <span className="text-xs font-medium text-red-700">阻力位</span>
                 <div className="text-sm text-red-800">
@@ -389,9 +390,9 @@ const StockAnalysisCard: React.FC<StockAnalysisCardProps> = ({ stockData, lineCo
       <div className="mt-6 pt-4 border-t border-gray-200">
         <h4 className="text-sm font-medium text-gray-600 mb-2">数据来源</h4>
         <div className="text-xs text-gray-500 space-y-1">
-          <div>市盈率: {stockData.data_source.pe}</div>
-          <div>RSI: {stockData.data_source.rsi}</div>
-          <div>估值: {stockData.data_source.valuation}</div>
+          <div>市盈率: {stockData.data_source?.pe ?? '-'}</div>
+          <div>RSI: {stockData.data_source?.rsi ?? '-'}</div>
+          <div>估值: {stockData.data_source?.valuation ?? '-'}</div>
         </div>
       </div>
     </div>
