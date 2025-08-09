@@ -617,14 +617,7 @@ AWS_REGION=ap-northeast-1
 
 # MCP数据服务配置
 MCP_PYTHON_PATH=$DEPLOY_PATH/backend/api/mcp-yfinance-server/venv/bin/python
-MCP_SERVER_PATH=$DEPLOY_PATH/backend/api/mcp-yfinance-server/simple_stock_server.py
-MCP_TIMEOUT=${MCP_TIMEOUT:-30000}
-MCP_RETRY_COUNT=${MCP_RETRY_COUNT:-3}
-MCP_CACHE_TTL=${MCP_CACHE_TTL:-300}
-
-# MCP数据服务配置
-MCP_PYTHON_PATH=$DEPLOY_PATH/backend/api/mcp-yfinance-server/venv/bin/python
-MCP_SERVER_PATH=$DEPLOY_PATH/backend/api/mcp-yfinance-server/simple_stock_server.py
+MCP_SERVER_PATH=$DEPLOY_PATH/backend/api/mcp-yfinance-server/standard_mcp_server.py
 MCP_TIMEOUT=${MCP_TIMEOUT:-30000}
 MCP_RETRY_COUNT=${MCP_RETRY_COUNT:-3}
 MCP_CACHE_TTL=${MCP_CACHE_TTL:-300}
