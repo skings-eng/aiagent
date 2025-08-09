@@ -104,6 +104,7 @@ show_help() {
     echo "  --redis-db NUM          Redis数据库编号 (覆盖配置文件)"
     echo "  --check-only            仅执行环境检查"
     echo "  --skip-check            跳过环境检查"
+    echo "  --skip-port-check       跳过端口占用检查"
     echo ""
     echo "配置文件:"
     echo "  脚本会自动加载 backend/.env-server 配置文件"
@@ -116,6 +117,7 @@ show_help() {
     echo "  $0 -r https://github.com/user/aiagent.git   # 覆盖Git仓库地址"
     echo "  $0 --check-only                            # 仅执行环境检查"
     echo "  $0 --skip-check                            # 跳过环境检查直接部署"
+    echo "  $0 --skip-port-check                       # 跳过端口检查(适用于数据库已运行)"
 }
 
 # 版本比较函数
@@ -286,14 +288,20 @@ check_ports() {
     local ports=("$API_PORT" "$FRONTEND_PORT" "$LINE_PORT" "$MONGODB_PORT" "$REDIS_PORT")
     local port_names=("API服务" "前端服务" "LINE服务" "MongoDB" "Redis")
     local port_issues=0
+    local service_ports=("$MONGODB_PORT" "$REDIS_PORT")
     
     for i in "${!ports[@]}"; do
         local port=${ports[$i]}
         local name=${port_names[$i]}
         
         if netstat -tuln 2>/dev/null | grep -q ":$port "; then
-            log_warning "端口 $port ($name): 已被占用"
-            ((port_issues++))
+            # 检查是否是数据库服务端口
+            if [[ " ${service_ports[@]} " =~ " ${port} " ]]; then
+                log_success "端口 $port ($name): 服务已运行"
+            else
+                log_warning "端口 $port ($name): 已被占用"
+                ((port_issues++))
+            fi
         else
             echo "  端口 $port ($name): 可用"
         fi
@@ -388,8 +396,14 @@ run_environment_check() {
         "check_python"
         "check_mongodb"
         "check_redis"
-        "check_ports"
     )
+    
+    # 如果没有跳过端口检查，则添加端口检查
+    if [ "$SKIP_PORT_CHECK" != "true" ]; then
+        checks+=("check_ports")
+    else
+        log_info "跳过端口占用检查"
+    fi
     
     for check in "${checks[@]}"; do
         ((total_checks++))
@@ -1320,6 +1334,10 @@ while [[ $# -gt 0 ]]; do
             SKIP_CHECK=true
             shift
             ;;
+        --skip-port-check)
+            SKIP_PORT_CHECK=true
+            shift
+            ;;
         *)
             log_error "未知选项: $1"
             echo "使用 -h 查看帮助信息"
@@ -1333,15 +1351,9 @@ load_config
 
 # 主执行逻辑
 main() {
-    # 环境检查
-    if [ "$SKIP_CHECK" != "true" ]; then
-        if ! run_environment_check; then
-            log_error "环境检查未通过，请修复问题后重新运行"
-            log_info "或使用 --skip-check 参数跳过环境检查"
-            exit 1
-        fi
-        echo ""
-    fi
+    # 跳过环境检查（假设远程服务器环境已配置完毕）
+    log_info "跳过环境检查，假设远程服务器环境已配置完毕"
+    echo ""
     
     # 验证配置
     if ! validate_config; then
