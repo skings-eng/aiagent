@@ -621,6 +621,13 @@ MCP_SERVER_PATH=$DEPLOY_PATH/backend/api/mcp-yfinance-server/simple_stock_server
 MCP_TIMEOUT=${MCP_TIMEOUT:-30000}
 MCP_RETRY_COUNT=${MCP_RETRY_COUNT:-3}
 MCP_CACHE_TTL=${MCP_CACHE_TTL:-300}
+
+# MCP数据服务配置
+MCP_PYTHON_PATH=$DEPLOY_PATH/backend/api/mcp-yfinance-server/venv/bin/python
+MCP_SERVER_PATH=$DEPLOY_PATH/backend/api/mcp-yfinance-server/simple_stock_server.py
+MCP_TIMEOUT=${MCP_TIMEOUT:-30000}
+MCP_RETRY_COUNT=${MCP_RETRY_COUNT:-3}
+MCP_CACHE_TTL=${MCP_CACHE_TTL:-300}
 EOF
 
     # 创建LINE服务环境变量文件
@@ -808,6 +815,7 @@ setup_mcp_service() {
     echo "安装Python依赖..."
     source venv/bin/activate
     pip install .
+    deactivate
     
     # 确保启动脚本有执行权限
     chmod +x start_mcp.sh
