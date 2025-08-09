@@ -13,7 +13,7 @@ BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
 # 配置文件路径
-CONFIG_FILE="backend/.env-server"
+CONFIG_FILE="$PWD/backend/.env-server"
 
 # 默认配置变量（如果配置文件不存在时使用）
 PROJECT_NAME="aiagent"
@@ -433,15 +433,15 @@ validate_config() {
     
     local config_errors=0
     
-    if [ -z "$GIT_REPO" ]; then
-        log_error "Git仓库地址未配置 (GIT_REPO)"
-        ((config_errors++))
+    # 跳过Git仓库验证，使用当前目录作为部署路径
+    if [ -z "$DEPLOY_PATH" ]; then
+        DEPLOY_PATH="/root/aiagent"
+        log_info "使用默认部署路径: $DEPLOY_PATH"
     fi
     
-    if [ -z "$DEPLOY_PATH" ]; then
-        log_error "部署路径未配置 (DEPLOY_PATH)"
-        ((config_errors++))
-    fi
+    # 设置配置文件的绝对路径
+    CONFIG_FILE="$DEPLOY_PATH/backend/.env-server"
+    log_info "配置文件路径: $CONFIG_FILE"
     
     # 自动生成安全密钥（如果未配置）
     if [ -z "$JWT_SECRET" ] || [ "$JWT_SECRET" = "your-super-secret-jwt-key-change-this-in-production" ]; then
@@ -1255,8 +1255,7 @@ run_full_deployment() {
         exit 0
     fi
     
-    # 执行部署步骤
-    clone_or_update_code
+    # 执行部署步骤（跳过代码克隆）
     create_env_files
     install_dependencies
     build_project
