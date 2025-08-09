@@ -11,8 +11,9 @@ from typing import Any, Dict, List, Optional
 
 import yfinance as yf
 from mcp.server import Server
-from mcp.server.models import InitializeResult
-from mcp.server.stdio import stdio_server
+from mcp.server.models import InitializationOptions
+from mcp.server.lowlevel import NotificationOptions
+import mcp.server.stdio
 from mcp.types import (
     CallToolRequest,
     CallToolResult,
@@ -383,20 +384,17 @@ async def handle_call_tool(name: str, arguments: Dict[str, Any]) -> CallToolResu
 async def main():
     """主函数"""
     # 使用stdio传输运行服务器
-    async with stdio_server() as (read_stream, write_stream):
+    async with mcp.server.stdio.stdio_server() as (read_stream, write_stream):
         await server.run(
             read_stream,
             write_stream,
-            InitializeResult(
-                protocolVersion="2024-11-05",
+            InitializationOptions(
+                server_name="yfinance-stock-server",
+                server_version="1.0.0",
                 capabilities=server.get_capabilities(
-                    notification_options=None,
-                    experimental_capabilities=None,
+                    notification_options=NotificationOptions(),
+                    experimental_capabilities={},
                 ),
-                serverInfo={
-                    "name": "yfinance-stock-server",
-                    "version": "1.0.0",
-                },
             ),
         )
 
