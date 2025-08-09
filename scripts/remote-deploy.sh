@@ -879,11 +879,10 @@ module.exports = {
     {
       name: 'aiagent-frontend',
       script: 'npm',
-      args: 'run preview',
+      args: 'run preview -- --port $FRONTEND_PORT --host 0.0.0.0',
       cwd: '$DEPLOY_PATH/frontend/b-end',
       env: {
-        NODE_ENV: '$NODE_ENV',
-        PORT: $FRONTEND_PORT
+        NODE_ENV: '$NODE_ENV'
       },
       instances: 1,
       exec_mode: 'fork',
