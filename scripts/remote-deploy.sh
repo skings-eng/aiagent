@@ -798,7 +798,7 @@ setup_mcp_service() {
     # 激活虚拟环境并安装依赖
     echo "安装Python依赖..."
     source venv/bin/activate
-    pip install -r requirements.txt
+    pip install .
     
     # 确保启动脚本有执行权限
     chmod +x start_mcp.sh
@@ -1255,8 +1255,8 @@ run_full_deployment() {
         exit 0
     fi
     
-    # 执行部署步骤（跳过代码克隆）
-    create_env_files
+    # 执行部署步骤（跳过代码克隆和环境变量文件生成）
+    log_info "跳过环境变量文件生成，使用现有配置文件"
     install_dependencies
     build_project
     setup_mcp_service
