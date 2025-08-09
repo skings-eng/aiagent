@@ -246,6 +246,12 @@ class MCPStockClient {
               // 处理初始化响应
               if (response.id === 1 && !initialized) {
                 initialized = true;
+                // 发送初始化完成通知
+                const initializedNotification = {
+                  jsonrpc: '2.0',
+                  method: 'notifications/initialized'
+                };
+                child.stdin.write(JSON.stringify(initializedNotification) + '\n');
                 // 发送工具调用请求
                 child.stdin.write(JSON.stringify(mcpRequest) + '\n');
               }
