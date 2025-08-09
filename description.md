@@ -1,8 +1,8 @@
-# 日本股票市场AI分析智能体系统 - 项目架构说明
+# AI智能体系统 - 项目架构说明
 
 ## 项目概述
 
-本项目是一个基于AI的日本股票市场分析智能体系统，提供股票数据分析、AI对话、LINE Bot集成等功能。系统采用微服务架构，支持多种AI模型，并提供Web管理界面。
+本项目是一个基于AI的智能体系统，提供AI对话、LINE Bot集成、股票数据分析等功能。系统采用微服务架构，支持多种AI模型，并提供Web管理界面。
 
 ## 技术架构
 
@@ -35,7 +35,7 @@ aiagent/
 | **主API服务** | `8001` | HTTP | 后端核心API服务，提供AI模型管理、聊天对话、系统设置等功能 |
 | **前端服务** | `3000` | HTTP | React前端应用，B端管理界面，提供可视化配置和管理功能 |
 | **LINE Bot服务** | `3003` | HTTP | LINE Bot Webhook服务，处理LINE消息接收和发送 |
-| **MCP股票数据服务** | `stdio` | MCP | 基于MCP协议的股票数据服务，通过标准输入输出通信 |
+| **MCP数据服务** | `stdio` | MCP | 基于MCP协议的金融数据服务，通过标准输入输出通信 |
 | **MongoDB** | `27017` | TCP | 数据库服务，存储系统配置、聊天记录、用户数据等 |
 | **Redis** | `6379` | TCP | 缓存服务，用于会话存储、速率限制、临时数据缓存 |
 
@@ -109,7 +109,7 @@ aiagent/
 - Webhook URL设置
 - 消息处理逻辑
 
-### 3. MCP股票数据服务 (backend/api/mcp-yfinance-server)
+### 3. MCP数据服务 (backend/api/mcp-yfinance-server)
 
 **技术栈**:
 - **语言**: Python 3.11+
@@ -118,11 +118,11 @@ aiagent/
 - **协议**: MCP (Model Context Protocol)
 
 **核心功能**:
-- 股票价格获取
+- 金融数据获取
 - 历史数据分析
-- 技术指标计算 (RSI, MACD, 布林带等)
+- 技术指标计算
 - 趋势分析
-- 基本面数据
+- 数据可视化
 - 关注列表管理
 
 **服务配置**:
@@ -132,7 +132,7 @@ aiagent/
 - **进程管理**: 由主API服务调用
 
 **依赖包**:
-- yfinance: 股票数据获取
+- yfinance: 金融数据获取
 - pandas: 数据处理
 - numpy: 数值计算
 - matplotlib: 图表生成
@@ -181,18 +181,216 @@ aiagent/
 
 ## 数据库设计
 
-### MongoDB集合
-- **Settings**: 系统配置存储
-- **Prompts**: 提示词管理
-- **ChatHistory**: 聊天记录
-- **LineUsers**: LINE用户数据
-- **LineMessages**: LINE消息记录
+### MongoDB 数据库
 
-### Redis缓存
-- 会话存储
-- 速率限制计数
-- 临时数据缓存
-- 实时数据存储
+**连接配置**:
+- **默认URI**: `mongodb://localhost:27017/aiagent`
+- **数据库名**: `aiagent`
+- **连接池**: 最大10个连接
+- **超时设置**: 服务器选择5秒，Socket 45秒
+- **环境变量**: `MONGODB_URI`
+
+**集合结构**:
+
+#### 1. users 集合
+```javascript
+{
+  username: String,     // 用户名 (3-30字符)
+  email: String,        // 邮箱地址
+  password: String,     // bcrypt加密密码
+  roles: [String],      // 角色: ['user', 'admin', 'moderator']
+  status: String,       // 状态: 'active', 'inactive', 'suspended', 'pending'
+  createdAt: Date,
+  updatedAt: Date
+}
+```
+
+#### 2. aimodels 集合
+```javascript
+{
+  name: String,         // 模型名称
+  type: String,         // 类型: 'text-generation', 'image-generation', 'embedding', 'chat', 'completion'
+  provider: String,     // 提供商: 'openai', 'anthropic', 'google'
+  version: String,      // 模型版本
+  apiKey: String,       // 加密的API密钥
+  config: Object,       // 模型配置参数
+  isActive: Boolean,    // 是否启用
+  lastTested: Date,     // 最后测试时间
+  createdAt: Date,
+  updatedAt: Date
+}
+```
+
+#### 3. settings 集合
+```javascript
+{
+  key: String,          // 设置键名 (唯一)
+  value: Mixed,         // 设置值
+  type: String,         // 数据类型: 'string', 'number', 'boolean', 'object', 'array'
+  category: String,     // 分类: 'system', 'ai', 'line', 'security'
+  description: String,  // 描述信息
+  isPublic: Boolean,    // 是否公开
+  isEditable: Boolean,  // 是否可编辑
+  validation: Object,   // 验证规则
+  metadata: Object,     // 元数据
+  createdBy: ObjectId,  // 创建者
+  updatedBy: ObjectId,  // 更新者
+  createdAt: Date,
+  updatedAt: Date
+}
+```
+
+#### 4. prompts 集合
+```javascript
+{
+  name: String,         // 提示词名称
+  content: String,      // 提示词内容
+  category: String,     // 分类
+  tags: [String],       // 标签
+  isActive: Boolean,    // 是否启用
+  usage: Number,        // 使用次数
+  createdAt: Date,
+  updatedAt: Date
+}
+```
+
+#### 5. chathistory 集合
+```javascript
+{
+  sessionId: String,    // 会话ID
+  userId: ObjectId,     // 用户ID
+  messages: [{
+    role: String,       // 'user', 'assistant', 'system'
+    content: String,    // 消息内容
+    timestamp: Date,    // 时间戳
+    metadata: Object    // 元数据
+  }],
+  model: String,        // 使用的AI模型
+  tokens: Number,       // 消耗的token数
+  createdAt: Date,
+  updatedAt: Date
+}
+```
+
+#### 6. lineusers 集合
+```javascript
+{
+  lineUserId: String,   // LINE用户ID (唯一)
+  displayName: String,  // 显示名称
+  pictureUrl: String,   // 头像URL
+  statusMessage: String,// 状态消息
+  language: String,     // 语言设置
+  isBlocked: Boolean,   // 是否被屏蔽
+  lastActiveAt: Date,   // 最后活跃时间
+  createdAt: Date,
+  updatedAt: Date
+}
+```
+
+#### 7. linemessages 集合
+```javascript
+{
+  messageId: String,    // LINE消息ID
+  userId: String,       // LINE用户ID
+  type: String,         // 消息类型: 'text', 'image', 'video', 'audio'
+  content: String,      // 消息内容
+  replyToken: String,   // 回复token
+  timestamp: Date,      // 时间戳
+  isProcessed: Boolean, // 是否已处理
+  response: String,     // AI回复内容
+  createdAt: Date
+}
+```
+
+**索引配置**:
+- users: `username`, `email` (唯一索引)
+- settings: `key` (唯一索引), `category`
+- chathistory: `sessionId`, `userId`, `createdAt`
+- lineusers: `lineUserId` (唯一索引)
+- linemessages: `userId`, `timestamp`
+
+### Redis 缓存数据库
+
+**连接配置**:
+- **默认地址**: `redis://localhost:6379`
+- **数据库**: 0 (默认)
+- **连接超时**: 10秒
+- **命令超时**: 5秒
+- **重试策略**: 最多3次，延迟递增
+- **环境变量**: `REDIS_URL`, `REDIS_PASSWORD`, `REDIS_DB`
+
+**缓存策略**:
+
+#### 1. 会话存储
+```
+Key格式: session:{sessionId}
+数据类型: String (JSON)
+过期时间: 24小时 (86400秒)
+内容: {
+  userId: String,
+  createdAt: Date,
+  lastAccessAt: Date,
+  metadata: Object
+}
+```
+
+#### 2. 速率限制
+```
+Key格式: rate_limit:{ip}:{endpoint}
+数据类型: String (计数器)
+过期时间: 1小时 (3600秒)
+内容: 请求次数
+```
+
+#### 3. AI模型配置缓存
+```
+Key格式: gemini_config:global
+数据类型: String (JSON)
+过期时间: 1小时 (3600秒)
+内容: {
+  model: String,
+  provider: String,
+  lastTested: String,
+  isConnected: Boolean
+}
+```
+
+#### 4. 公共设置缓存
+```
+Key格式: settings:public
+数据类型: String (JSON)
+过期时间: 30分钟 (1800秒)
+内容: 所有公开设置的JSON数组
+```
+
+#### 5. LINE用户状态
+```
+Key格式: line_user:{userId}:status
+数据类型: String
+过期时间: 1小时 (3600秒)
+内容: 用户当前状态信息
+```
+
+#### 6. 临时数据存储
+```
+Key格式: temp:{type}:{id}
+数据类型: String (JSON)
+过期时间: 15分钟 (900秒)
+内容: 临时处理数据
+```
+
+**Redis工具类**:
+- **CacheService**: 通用缓存操作
+- **SessionManager**: 会话管理
+- **RateLimiter**: 速率限制
+- **TempStorage**: 临时存储
+
+**监控和维护**:
+- 连接状态监控
+- 内存使用监控
+- 键过期策略
+- 数据备份策略
+- 性能优化配置
 
 ## AI模型集成
 
@@ -202,10 +400,12 @@ aiagent/
 3. **Google**: Gemini 2.5 Pro
 
 ### AI功能
-- 股票分析对话
-- 智能问答
-- 数据解读
-- 投资建议生成
+- 智能对话
+- 问答系统
+- 数据分析
+- 内容生成
+- 多模态处理
+- 自然语言理解
 
 ## 安全配置
 
@@ -229,7 +429,7 @@ aiagent/
   - aiagent-api: 主API服务 (端口: 8001)
   - aiagent-frontend: 前端服务 (端口: 3000)
   - aiagent-line: LINE Bot服务 (端口: 3003)
-  - aiagent-mcp: MCP股票数据服务 (stdio通信)
+  - aiagent-mcp: MCP数据服务 (stdio通信)
 
 **PM2配置说明**:
 - **自动重启**: 服务异常时自动重启
