@@ -165,10 +165,10 @@ const StockAnalysisCard: React.FC<StockAnalysisCardProps> = ({ stockData, lineCo
         <div className="bg-gray-50 rounded-lg p-4">
           <div className="flex items-center justify-between">
             <span className="text-sm font-medium text-gray-600">趋势评分</span>
-            {getTrendIcon(stockData.summary.scores.trend)}
+            {getTrendIcon(stockData.summary?.scores?.trend || '★★★')}
           </div>
-          <div className={`text-lg font-bold ${getScoreColor(stockData.summary.scores.trend)}`}>
-            {stockData.summary.scores.trend}
+          <div className={`text-lg font-bold ${getScoreColor(stockData.summary?.scores?.trend || '★★★')}`}>
+            {stockData.summary?.scores?.trend || '★★★'}
           </div>
         </div>
         <div className="bg-gray-50 rounded-lg p-4">
@@ -176,8 +176,8 @@ const StockAnalysisCard: React.FC<StockAnalysisCardProps> = ({ stockData, lineCo
             <span className="text-sm font-medium text-gray-600">估值评分</span>
             <Star className="w-5 h-5 text-blue-500" />
           </div>
-          <div className={`text-lg font-bold ${getScoreColor(stockData.summary.scores.valuation)}`}>
-            {stockData.summary.scores.valuation}
+          <div className={`text-lg font-bold ${getScoreColor(stockData.summary?.scores?.valuation || '★★★')}`}>
+            {stockData.summary?.scores?.valuation || '★★★'}
           </div>
         </div>
         <div className="bg-gray-50 rounded-lg p-4">
@@ -185,8 +185,8 @@ const StockAnalysisCard: React.FC<StockAnalysisCardProps> = ({ stockData, lineCo
             <span className="text-sm font-medium text-gray-600">风险评分</span>
             <AlertTriangle className="w-5 h-5 text-orange-500" />
           </div>
-          <div className={`text-lg font-bold ${getScoreColor(stockData.summary.scores.risk)}`}>
-            {stockData.summary.scores.risk}
+          <div className={`text-lg font-bold ${getScoreColor(stockData.summary?.scores?.risk || '★★★')}`}>
+            {stockData.summary?.scores?.risk || '★★★'}
           </div>
         </div>
       </div>
@@ -194,7 +194,7 @@ const StockAnalysisCard: React.FC<StockAnalysisCardProps> = ({ stockData, lineCo
       {/* 投资建议 */}
       <div className="bg-blue-50 rounded-lg p-4 mb-6">
         <h3 className="text-lg font-semibold text-blue-900 mb-2">投资建议</h3>
-        <p className="text-blue-800">{stockData.summary.suggestion}</p>
+        <p className="text-blue-800">{stockData.summary?.suggestion || '暂无建议'}</p>
       </div>
 
       {/* 企业内部情报 - 广告板块 */}
