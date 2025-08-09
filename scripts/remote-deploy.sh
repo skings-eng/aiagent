@@ -17,7 +17,7 @@ CONFIG_FILE="$PWD/backend/.env-server"
 
 # 默认配置变量（如果配置文件不存在时使用）
 PROJECT_NAME="aiagent"
-DEPLOY_PATH="/opt/aiagent"
+DEPLOY_PATH="/root/aiagent"
 GIT_REPO=""
 GIT_BRANCH="main"
 NODE_ENV="development"
