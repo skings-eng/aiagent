@@ -272,8 +272,7 @@ const StockAnalysisCard: React.FC<StockAnalysisCardProps> = ({ stockData, lineCo
                 <span className="text-sm font-medium text-gray-600">趋势评分</span>
                 <span className="text-sm font-bold text-gray-900">{stockData.technical?.trend_score ?? '-'}</span>
               </div>
-              -              <p className="text-xs text-gray-700">{stockData.technical?.trend_reason ?? '-'}</p>
-              +              <p className="text-xs text-gray-700">{stockData.technical?.trend_reason ?? '-'}</p>
+              <p className="text-xs text-gray-700">{stockData.technical?.trend_reason ?? '-'}</p>
             </div>
             <div className="grid grid-cols-2 gap-2">
               <div className="bg-gray-50 rounded p-2">
@@ -314,28 +313,28 @@ const StockAnalysisCard: React.FC<StockAnalysisCardProps> = ({ stockData, lineCo
             <div className="grid grid-cols-2 gap-2">
               <div className="bg-gray-50 rounded p-2">
                 <span className="text-xs font-medium text-gray-600">市盈率</span>
-                <div className="text-sm font-bold text-gray-900">{stockData.fundamental.pe}</div>
+                <div className="text-sm font-bold text-gray-900">{stockData.fundamental?.pe ?? '-'}</div>
               </div>
               <div className="bg-gray-50 rounded p-2">
                 <span className="text-xs font-medium text-gray-600">PEG比率</span>
-                <div className="text-sm font-bold text-gray-900">{stockData.fundamental.peg}</div>
+                <div className="text-sm font-bold text-gray-900">{stockData.fundamental?.peg ?? '-'}</div>
               </div>
               <div className="bg-gray-50 rounded p-2">
                 <span className="text-xs font-medium text-gray-600">投资回报率</span>
-                <div className="text-sm font-bold text-gray-900">{stockData.fundamental.roic}</div>
+                <div className="text-sm font-bold text-gray-900">{stockData.fundamental?.roic ?? '-'}</div>
               </div>
               <div className="bg-gray-50 rounded p-2">
                 <span className="text-xs font-medium text-gray-600">营收增长率</span>
-                <div className="text-sm font-bold text-gray-900">{stockData.fundamental.revenue_growth}</div>
+                <div className="text-sm font-bold text-gray-900">{stockData.fundamental?.revenue_growth ?? '-'}</div>
               </div>
             </div>
             <div className="bg-blue-50 rounded p-3">
               <span className="text-sm font-medium text-blue-700">估值区间</span>
-              <div className="text-sm font-bold text-blue-900">{stockData.fundamental.valuation}</div>
+              <div className="text-sm font-bold text-blue-900">{stockData.fundamental?.valuation ?? '-'}</div>
             </div>
             <div className="bg-gray-50 rounded p-3">
               <span className="text-sm font-medium text-gray-600">现金流趋势</span>
-              <div className="text-sm text-gray-900">{stockData.fundamental.fcf_trend}</div>
+              <div className="text-sm text-gray-900">{stockData.fundamental?.fcf_trend ?? '-'}</div>
             </div>
           </div>
         </div>
@@ -349,11 +348,11 @@ const StockAnalysisCard: React.FC<StockAnalysisCardProps> = ({ stockData, lineCo
           <div className="space-y-2">
             <div className="bg-gray-50 rounded p-3">
               <span className="text-sm font-medium text-gray-600">机构持股比例</span>
-              <div className="text-sm font-bold text-gray-900">{stockData.sentiment.institutional_holding}</div>
+              <div className="text-sm font-bold text-gray-900">{stockData.sentiment?.institutional_holding ?? '-'}</div>
             </div>
             <div className="bg-gray-50 rounded p-3">
               <span className="text-sm font-medium text-gray-600">主力资金流向</span>
-              <div className="text-sm font-bold text-gray-900">{stockData.sentiment.main_capital_flow}</div>
+              <div className="text-sm font-bold text-gray-900">{stockData.sentiment?.main_capital_flow ?? '-'}</div>
             </div>
           </div>
         </div>
@@ -367,9 +366,9 @@ const StockAnalysisCard: React.FC<StockAnalysisCardProps> = ({ stockData, lineCo
           <div className="space-y-2">
             <div className="bg-orange-50 rounded p-3">
               <span className="text-sm font-medium text-orange-700">波动率</span>
-              <div className="text-sm font-bold text-orange-900">{stockData.risk.volatility}</div>
+              <div className="text-sm font-bold text-orange-900">{stockData.risk?.volatility ?? '-'}</div>
             </div>
-            {stockData.risk.risk_events.length > 0 && (
+            {stockData.risk?.risk_events?.length > 0 && (
               <div className="bg-red-50 rounded p-3">
                 <span className="text-sm font-medium text-red-700">风险事件</span>
                 <ul className="text-sm text-red-800 mt-1">
