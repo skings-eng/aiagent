@@ -366,6 +366,41 @@ log_info "Build verification completed successfully"
 
 # Create production environment file for backend
 log_info "Creating backend production environment..."
+
+# Backup existing .env.production if it exists and preserve API keys
+EXISTING_GEMINI_KEY=""
+EXISTING_JWT_SECRET=""
+if [[ -f "backend/api/.env.production" ]]; then
+    log_info "Backing up existing API keys from .env.production..."
+    EXISTING_GEMINI_KEY=$(grep "^GEMINI_API_KEY=" backend/api/.env.production | cut -d'=' -f2- | tr -d '"' || echo "")
+    EXISTING_JWT_SECRET=$(grep "^JWT_SECRET=" backend/api/.env.production | cut -d'=' -f2- | tr -d '"' || echo "")
+    
+    # Also try alternative key names
+    if [[ -z "$EXISTING_GEMINI_KEY" ]]; then
+        EXISTING_GEMINI_KEY=$(grep "^GOOGLE_API_KEY=" backend/api/.env.production | cut -d'=' -f2- | tr -d '"' || echo "")
+    fi
+    if [[ -z "$EXISTING_GEMINI_KEY" ]]; then
+        EXISTING_GEMINI_KEY=$(grep "^GOOGLE_AI_API_KEY=" backend/api/.env.production | cut -d'=' -f2- | tr -d '"' || echo "")
+    fi
+fi
+
+# Use existing keys if available, otherwise use placeholders
+if [[ -n "$EXISTING_GEMINI_KEY" && "$EXISTING_GEMINI_KEY" != "your-gemini-api-key" ]]; then
+    GEMINI_KEY_TO_USE="$EXISTING_GEMINI_KEY"
+    log_info "Using existing Gemini API key (length: ${#EXISTING_GEMINI_KEY})"
+else
+    GEMINI_KEY_TO_USE="your-gemini-api-key"
+    log_warn "No valid Gemini API key found, using placeholder. Please update manually."
+fi
+
+if [[ -n "$EXISTING_JWT_SECRET" && "$EXISTING_JWT_SECRET" != "your-super-secret-jwt-key-change-in-production" ]]; then
+    JWT_SECRET_TO_USE="$EXISTING_JWT_SECRET"
+    log_info "Using existing JWT secret"
+else
+    JWT_SECRET_TO_USE="your-super-secret-jwt-key-change-in-production"
+    log_warn "No valid JWT secret found, using placeholder. Please update manually."
+fi
+
 cat > backend/api/.env.production << EOF
 NODE_ENV=production
 PORT=${API_PORT}
@@ -380,11 +415,13 @@ FRONTEND_URL=http://${SERVER_HOST}:${FRONTEND_PORT}
 ALLOWED_ORIGINS=http://${SERVER_HOST}:${FRONTEND_PORT},http://localhost:${FRONTEND_PORT},http://127.0.0.1:${FRONTEND_PORT}
 
 # JWT Configuration
-JWT_SECRET=your-super-secret-jwt-key-change-in-production
+JWT_SECRET=${JWT_SECRET_TO_USE}
 JWT_EXPIRES_IN=7d
 
 # Gemini API Configuration
-GEMINI_API_KEY=your-gemini-api-key
+GEMINI_API_KEY=${GEMINI_KEY_TO_USE}
+GOOGLE_API_KEY=${GEMINI_KEY_TO_USE}
+GOOGLE_AI_API_KEY=${GEMINI_KEY_TO_USE}
 
 # Logging
 LOG_LEVEL=info
