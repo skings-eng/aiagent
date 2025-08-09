@@ -74,7 +74,7 @@ update_mcp_server() {
         
         # 测试新的MCP服务器
         log_info "测试新的MCP服务器..."
-        if python standard_mcp_server.py --help >/dev/null 2>&1; then
+        if python simple_stock_server.py --help >/dev/null 2>&1; then
             log_success "新的MCP服务器可以正常启动"
         else
             log_warning "MCP服务器测试失败，但继续部署"
@@ -101,7 +101,7 @@ update_env_vars() {
         
         # 统一使用 /root/aiagent 作为部署路径
         CORRECT_PATH="/root/aiagent"
-        sed -i "s|MCP_SERVER_PATH=.*|MCP_SERVER_PATH=$CORRECT_PATH/backend/api/mcp-yfinance-server/standard_mcp_server.py|" backend/api/.env
+        sed -i "s|MCP_SERVER_PATH=.*|MCP_SERVER_PATH=$CORRECT_PATH/backend/api/mcp-yfinance-server/simple_stock_server.py|" backend/api/.env
         
         log_success "环境变量更新完成"
     else

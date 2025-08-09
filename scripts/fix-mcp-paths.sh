@@ -56,7 +56,7 @@ fix_env_files() {
         
         # 更新MCP相关路径
         sed -i "s|MCP_PYTHON_PATH=.*|MCP_PYTHON_PATH=$CORRECT_DEPLOY_PATH/backend/api/mcp-yfinance-server/venv/bin/python|" backend/api/.env
-        sed -i "s|MCP_SERVER_PATH=.*|MCP_SERVER_PATH=$CORRECT_DEPLOY_PATH/backend/api/mcp-yfinance-server/standard_mcp_server.py|" backend/api/.env
+        sed -i "s|MCP_SERVER_PATH=.*|MCP_SERVER_PATH=$CORRECT_DEPLOY_PATH/backend/api/mcp-yfinance-server/simple_stock_server.py|" backend/api/.env
         
         log_success "backend/api/.env 修复完成"
     else
@@ -70,7 +70,7 @@ fix_env_files() {
         
         # 更新MCP相关路径
         sed -i "s|MCP_PYTHON_PATH=.*|MCP_PYTHON_PATH=$CORRECT_DEPLOY_PATH/backend/api/mcp-yfinance-server/venv/bin/python|" backend/.env-server
-        sed -i "s|MCP_SERVER_PATH=.*|MCP_SERVER_PATH=$CORRECT_DEPLOY_PATH/backend/api/mcp-yfinance-server/standard_mcp_server.py|" backend/.env-server
+        sed -i "s|MCP_SERVER_PATH=.*|MCP_SERVER_PATH=$CORRECT_DEPLOY_PATH/backend/api/mcp-yfinance-server/simple_stock_server.py|" backend/.env-server
         
         log_success "backend/.env-server 修复完成"
     else
@@ -108,15 +108,15 @@ fix_mcp_venv() {
         fi
         
         # 测试MCP服务器
-        if [ -f "standard_mcp_server.py" ]; then
+        if [ -f "simple_stock_server.py" ]; then
             log_info "测试MCP服务器..."
-            if python standard_mcp_server.py --help >/dev/null 2>&1; then
+            if python simple_stock_server.py --help >/dev/null 2>&1; then
                 log_success "MCP服务器测试通过"
             else
                 log_warning "MCP服务器测试失败，但继续执行"
             fi
         else
-            log_error "standard_mcp_server.py 文件不存在"
+            log_error "simple_stock_server.py 文件不存在"
         fi
         
         deactivate
@@ -181,10 +181,10 @@ show_current_config() {
     fi
     
     echo "=== MCP服务器文件检查 ==="
-    if [ -f "backend/api/mcp-yfinance-server/standard_mcp_server.py" ]; then
-        log_success "MCP服务器文件存在: backend/api/mcp-yfinance-server/standard_mcp_server.py"
+    if [ -f "backend/api/mcp-yfinance-server/simple_stock_server.py" ]; then
+        log_success "MCP服务器文件存在: backend/api/mcp-yfinance-server/simple_stock_server.py"
     else
-        log_error "MCP服务器文件不存在: backend/api/mcp-yfinance-server/standard_mcp_server.py"
+        log_error "MCP服务器文件不存在: backend/api/mcp-yfinance-server/simple_stock_server.py"
     fi
 }
 
