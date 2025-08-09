@@ -617,7 +617,7 @@ AWS_REGION=ap-northeast-1
 
 # MCP数据服务配置
 MCP_PYTHON_PATH=$DEPLOY_PATH/backend/api/mcp-yfinance-server/venv/bin/python
-MCP_SERVER_PATH=$DEPLOY_PATH/backend/api/mcp-yfinance-server/server.py
+MCP_SERVER_PATH=$DEPLOY_PATH/backend/api/mcp-yfinance-server/simple_stock_server.py
 MCP_TIMEOUT=${MCP_TIMEOUT:-30000}
 MCP_RETRY_COUNT=${MCP_RETRY_COUNT:-3}
 MCP_CACHE_TTL=${MCP_CACHE_TTL:-300}
@@ -754,6 +754,15 @@ install_dependencies() {
     # 安装LINE服务依赖
     echo "安装LINE服务依赖..."
     cd backend/line && npm install && cd ../..
+    
+    # 安装MCP服务依赖
+    echo "安装MCP服务依赖..."
+    cd backend/api/mcp-yfinance-server
+    python3 -m venv venv
+    source venv/bin/activate
+    pip install -e .
+    deactivate
+    cd ../../..
     
     # 安装前端依赖
     echo "安装前端依赖..."
