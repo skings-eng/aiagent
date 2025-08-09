@@ -6,7 +6,7 @@
 echo "=== MCP服务器修复脚本（远程服务器版本） ==="
 
 # 设置工作目录
-DEPLOY_PATH="/root/aiagent"
+DEPLOY_PATH="/home/ubuntu/aiagent"
 MCP_DIR="$DEPLOY_PATH/backend/api/mcp-yfinance-server"
 
 echo "检查MCP服务器目录: $MCP_DIR"

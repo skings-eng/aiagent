@@ -17,7 +17,7 @@ CONFIG_FILE="$PWD/backend/.env-server"
 
 # 默认配置变量（如果配置文件不存在时使用）
 PROJECT_NAME="aiagent"
-DEPLOY_PATH="/root/aiagent"
+DEPLOY_PATH="/home/ubuntu/aiagent"
 GIT_REPO=""
 GIT_BRANCH="main"
 NODE_ENV="development"
@@ -435,7 +435,7 @@ validate_config() {
     
     # 跳过Git仓库验证，使用当前目录作为部署路径
     if [ -z "$DEPLOY_PATH" ]; then
-        DEPLOY_PATH="/root/aiagent"
+        DEPLOY_PATH="/home/ubuntu/aiagent"
         log_info "使用默认部署路径: $DEPLOY_PATH"
     fi
     
