@@ -82,6 +82,11 @@ aiagent/
 **环境配置**:
 - 端口: 8001 (开发环境)
 - MongoDB连接
+默认管理员账户:
+  用户名: admin
+  密码: admin123
+  请登录后立即修改默认密码！
+
 - Redis配置
 - AI API密钥 (OpenAI, Claude, Gemini)
 - CORS设置
