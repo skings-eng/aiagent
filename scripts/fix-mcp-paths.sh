@@ -39,14 +39,8 @@ check_environment() {
     log_info "当前用户: $CURRENT_USER"
     log_info "当前路径: $CURRENT_PATH"
     
-    # 确定正确的部署路径
-    if [ "$CURRENT_USER" = "ubuntu" ]; then
-        CORRECT_DEPLOY_PATH="/home/ubuntu/aiagent"
-    elif [ "$CURRENT_USER" = "root" ]; then
-        CORRECT_DEPLOY_PATH="/root/aiagent"
-    else
-        CORRECT_DEPLOY_PATH="$HOME/aiagent"
-    fi
+    # 统一使用 /root/aiagent 作为部署路径
+    CORRECT_DEPLOY_PATH="/root/aiagent"
     
     log_info "正确的部署路径应该是: $CORRECT_DEPLOY_PATH"
 }
