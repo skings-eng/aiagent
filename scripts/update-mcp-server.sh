@@ -99,8 +99,16 @@ update_env_vars() {
         # 备份原文件
         cp backend/api/.env backend/api/.env.backup
         
-        # 更新MCP_SERVER_PATH
-        sed -i 's|MCP_SERVER_PATH=.*|MCP_SERVER_PATH=/home/ubuntu/aiagent/backend/api/mcp-yfinance-server/standard_mcp_server.py|' backend/api/.env
+        # 更新MCP_SERVER_PATH - 动态确定路径
+        CURRENT_USER=$(whoami)
+        if [ "$CURRENT_USER" = "ubuntu" ]; then
+            CORRECT_PATH="/home/ubuntu/aiagent"
+        elif [ "$CURRENT_USER" = "root" ]; then
+            CORRECT_PATH="/root/aiagent"
+        else
+            CORRECT_PATH="$HOME/aiagent"
+        fi
+        sed -i "s|MCP_SERVER_PATH=.*|MCP_SERVER_PATH=$CORRECT_PATH/backend/api/mcp-yfinance-server/standard_mcp_server.py|" backend/api/.env
         
         log_success "环境变量更新完成"
     else

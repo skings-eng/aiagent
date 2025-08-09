@@ -5,8 +5,15 @@
 
 echo "=== MCP服务器修复脚本（远程服务器版本） ==="
 
-# 设置工作目录
-DEPLOY_PATH="/home/ubuntu/aiagent"
+# 设置工作目录 - 根据当前用户动态确定
+CURRENT_USER=$(whoami)
+if [ "$CURRENT_USER" = "ubuntu" ]; then
+    DEPLOY_PATH="/home/ubuntu/aiagent"
+elif [ "$CURRENT_USER" = "root" ]; then
+    DEPLOY_PATH="/root/aiagent"
+else
+    DEPLOY_PATH="$HOME/aiagent"
+fi
 MCP_DIR="$DEPLOY_PATH/backend/api/mcp-yfinance-server"
 
 echo "检查MCP服务器目录: $MCP_DIR"
