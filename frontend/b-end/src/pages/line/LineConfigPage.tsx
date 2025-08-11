@@ -75,10 +75,13 @@ const LineConfigPage: React.FC = () => {
       return;
     }
 
-    if (!url.startsWith('https://line.me/')) {
+    // 验证URL格式
+    try {
+      new URL(url);
+    } catch {
       setUrlStatus({
         status: 'invalid',
-        message: 'URL 必须以 https://line.me/ 开头'
+        message: 'URL 格式无效'
       });
       return;
     }

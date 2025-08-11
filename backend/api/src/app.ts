@@ -73,10 +73,10 @@ const corsOptions = {
       'https://172.237.20.24:8080',
       'https://172.237.20.24:443',
       // Production domain
-      'https://jpstockai.shop',
-      'https://jpstockai.shop/chat',
-      'http://jpstockai.shop',
-      'http://jpstockai.shop/chat',
+      'https://aiforstock.shop',
+      'https://aiforstock.shop/chat',
+      'http://aiforstock.shop',
+      'http://aiforstock.shop/chat',
     ];
     
     // Add production origins from environment
