@@ -1,6 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { MessageCircle, ExternalLink, Settings, CheckCircle, AlertCircle, Eye } from 'lucide-react';
 
+// HTML转义函数，防止XSS攻击
+const escapeHtml = (text: string): string => {
+  const div = document.createElement('div');
+  div.textContent = text;
+  return div.innerHTML;
+};
+
 interface LineConfig {
   url: string;
   displayText: string;
@@ -257,14 +264,14 @@ const LineConfigPage: React.FC = () => {
             这是用户在聊天界面中看到的效果
           </div>
           <div class="promotion-card">
-            <div class="promotion-title">${config.displayText || 'LINE官方账号'}</div>
-            <div class="promotion-description">${config.description || '添加我们的LINE官方账号，获取更多服务和优惠信息！'}</div>
+            <div class="promotion-title">${escapeHtml(config.displayText || 'LINE官方账号')}</div>
+            <div class="promotion-description">${escapeHtml(config.description || '添加我们的LINE官方账号，获取更多服务和优惠信息！')}</div>
             <div class="promotion-tags">
               <span class="tag">官方认证</span>
               <span class="tag">即时回复</span>
               <span class="tag">专属优惠</span>
             </div>
-            <button class="promotion-button" onclick="window.open('${config.url || 'https://line.me/'}', '_blank')">
+            <button class="promotion-button" onclick="window.open('${escapeHtml(config.url || 'https://line.me/')}', '_blank')">
               添加为好友
             </button>
           </div>
