@@ -1,6 +1,9 @@
 import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
+import AuthProvider from './components/auth/AuthProvider';
+import ProtectedRoute from './components/auth/ProtectedRoute';
 import Layout from './components/layout/Layout';
+import LoginPage from './pages/auth/LoginPage';
 import HomePage from './pages/home/HomePage';
 import ChatPage from './pages/chat/ChatPage';
 import GeminiConfigPage from './pages/gemini/GeminiConfigPage';
@@ -12,22 +15,64 @@ import StockOptimizationPage from './pages/stock/StockOptimizationPage';
 
 const App: React.FC = () => {
   return (
-    <div className="App">
-      <Routes>
-        <Route path="/" element={<Layout />}>
-          <Route index element={<Navigate to="/chat" replace />} />
-          <Route path="home" element={<HomePage />} />
-          <Route path="chat" element={<ChatPage />} />
-          <Route path="stock" element={<StockPage />} />
-          <Route path="stock/optimization" element={<StockOptimizationPage />} />
-          <Route path="gemini" element={<GeminiConfigPage />} />
-          <Route path="gemini-config" element={<GeminiConfigPage />} />
-          <Route path="prompts" element={<SystemPromptsPage />} />
-          <Route path="line" element={<LineConfigPage />} />
-          <Route path="settings" element={<SettingsPage />} />
-        </Route>
-      </Routes>
-    </div>
+    <AuthProvider>
+      <div className="App">
+        <Routes>
+          {/* 登录页面 - 独立路由 */}
+          <Route path="/login" element={<LoginPage />} />
+          
+          {/* 主应用路由 */}
+          <Route path="/" element={<Layout />}>
+            <Route index element={<Navigate to="/chat" replace />} />
+            
+            {/* 公开页面 - 用户可直接访问 */}
+            <Route path="chat" element={<ChatPage />} />
+            
+            {/* 管理员页面 - 需要登录保护 */}
+            <Route path="home" element={
+              <ProtectedRoute>
+                <HomePage />
+              </ProtectedRoute>
+            } />
+            <Route path="stock" element={
+              <ProtectedRoute>
+                <StockPage />
+              </ProtectedRoute>
+            } />
+            <Route path="stock/optimization" element={
+              <ProtectedRoute>
+                <StockOptimizationPage />
+              </ProtectedRoute>
+            } />
+            <Route path="gemini" element={
+              <ProtectedRoute>
+                <GeminiConfigPage />
+              </ProtectedRoute>
+            } />
+            <Route path="gemini-config" element={
+              <ProtectedRoute>
+                <GeminiConfigPage />
+              </ProtectedRoute>
+            } />
+            <Route path="prompts" element={
+              <ProtectedRoute>
+                <SystemPromptsPage />
+              </ProtectedRoute>
+            } />
+            <Route path="line" element={
+              <ProtectedRoute>
+                <LineConfigPage />
+              </ProtectedRoute>
+            } />
+            <Route path="settings" element={
+              <ProtectedRoute>
+                <SettingsPage />
+              </ProtectedRoute>
+            } />
+          </Route>
+        </Routes>
+      </div>
+    </AuthProvider>
   );
 };
 

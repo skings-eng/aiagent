@@ -4,6 +4,7 @@ import promptRoutes from './prompts';
 import settingsRoutes from './settings';
 import chatRoutes from './chat';
 import lineRoutes from './line';
+import authRoutes from './auth';
 import { AppError } from '../middleware/errorHandler';
 import { logger } from '../utils/logger';
 
@@ -49,6 +50,7 @@ router.get('/status', async (req, res, next) => {
 });
 
 // Mount routes
+router.use('/auth', authRoutes);
 router.use('/ai-models', aiModelRoutes);
 router.use('/prompts', promptRoutes);
 router.use('/settings', settingsRoutes);

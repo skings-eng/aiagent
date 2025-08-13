@@ -126,16 +126,7 @@ const LoginPage: React.FC = () => {
             </button>
           </div>
 
-          {/* Demo credentials */}
-          <div className="mt-6 p-4 bg-blue-50 rounded-md">
-            <h3 className="text-sm font-medium text-blue-800 mb-2">
-              演示账号
-            </h3>
-            <div className="text-xs text-blue-700 space-y-1">
-              <div>用户名: admin@example.com</div>
-              <div>密码: admin123</div>
-            </div>
-          </div>
+
         </form>
       </div>
     </div>

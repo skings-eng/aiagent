@@ -13,7 +13,7 @@ export interface AuthState {
 }
 
 export interface AuthActions {
-  login: (email: string, password: string) => Promise<void>;
+  login: (username: string, password: string) => Promise<void>;
   logout: () => void;
   register: (email: string, password: string, name: string) => Promise<void>;
 }
@@ -38,19 +38,38 @@ export const useAuth = (): UseAuthReturn => {
     setIsLoading(false);
   }, []);
 
-  const login = async (email: string, _password: string): Promise<void> => {
+  const login = async (username: string, password: string): Promise<void> => {
     setIsLoading(true);
     try {
-      // 这里应该调用实际的登录API
-      // 目前使用模拟数据
-      const mockUser: User = {
-        id: '1',
-        email,
-        name: email.split('@')[0]
+      // 调用后端API进行认证
+      const response = await fetch('/api/v1/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ username, password }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok || !data.success) {
+        throw new Error(data.message || '登录失败');
+      }
+
+      // 创建用户对象
+      const user: User = {
+        id: data.user.id.toString(),
+        email: data.user.email,
+        name: data.user.name
       };
       
-      setUser(mockUser);
-      localStorage.setItem('user', JSON.stringify(mockUser));
+      setUser(user);
+      localStorage.setItem('user', JSON.stringify(user));
+      
+      // 可选：存储token用于后续API调用
+      if (data.token) {
+        localStorage.setItem('token', data.token);
+      }
     } catch (error) {
       console.error('Login failed:', error);
       throw error;
@@ -62,6 +81,7 @@ export const useAuth = (): UseAuthReturn => {
   const logout = (): void => {
     setUser(null);
     localStorage.removeItem('user');
+    localStorage.removeItem('token');
   };
 
   const register = async (email: string, _password: string, name: string): Promise<void> => {
