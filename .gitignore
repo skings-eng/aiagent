@@ -49,6 +49,9 @@ jspm_packages/
 # Output of 'npm pack'
 *.tgz
 
+# Local PM2 configuration
+ecosystem.local.config.js
+
 # Yarn Integrity file
 .yarn-integrity
 
@@ -124,3 +127,5 @@ dump.rdb
 *.key
 *.crt
 *.cert
+data
+redis-no-auth.conf

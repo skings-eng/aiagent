@@ -2,7 +2,7 @@
   "mcpServers": {
     "yfinance": {
       "command": "bash",
-      "args": ["/Users/sking/aiagent/backend/api/mcp-yfinance-server/start_mcp.sh"],
+      "args": ["/Users/kencode/mac/vuedev/aiagent/backend/api/mcp-yfinance-server/start_mcp.sh"],
       "description": "Yahoo Finance股票数据服务器，提供实时股价、技术指标分析等功能",
       "tools": [
         "get_stock_price",
