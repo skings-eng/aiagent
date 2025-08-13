@@ -28,17 +28,17 @@ const ChatPage: React.FC = () => {
       console.log('开始解析股票数据，原始内容:', content);
       
       // 只有当内容明确包含股票相关关键词时才进行JSON解析
-      const hasStockKeywords = /(?:股票|股价|分析|投资|财务|技术指标|基本面|股份|公司|市值|PE|PB|ROE)/i.test(content);
+      const hasStockKeywords = /(?:股票|股价|分析|投资|财务|技术指标|基本面|股份|公司|市值|PE|PB|ROE|name|code|price|technical|fundamental|summary)/i.test(content);
       if (!hasStockKeywords) {
         console.log('内容不包含股票相关关键词，跳过JSON解析');
         return { stockData: null, cleanContent: content };
       }
       
-      // 方法1: 查找JSON代码块
-      let jsonMatch = content.match(/```json\s*([\s\S]*?)\s*```/);
       let jsonStr = '';
       let matchedText = '';
       
+      // 方法1: 查找JSON代码块
+      let jsonMatch = content.match(/```json\s*([\s\S]*?)\s*```/);
       if (jsonMatch) {
         jsonStr = jsonMatch[1].trim();
         matchedText = jsonMatch[0];
@@ -53,6 +53,47 @@ const ChatPage: React.FC = () => {
             jsonStr = blockContent;
             matchedText = jsonMatch[0];
             console.log('找到代码块中的JSON:', jsonStr);
+          }
+        }
+      }
+      
+      // 方法3: 直接查找JSON对象（不在代码块中）
+      if (!jsonStr) {
+        // 查找以 { 开始，以 } 结束的JSON对象
+        const jsonObjectMatch = content.match(/\{[\s\S]*?\}/);
+        if (jsonObjectMatch) {
+          const potentialJson = jsonObjectMatch[0];
+          try {
+            // 尝试解析以验证是否为有效JSON
+            const testParse = JSON.parse(potentialJson);
+            // 检查是否包含股票数据的关键字段
+            if (testParse.name || testParse.code || testParse.technical || testParse.fundamental) {
+              jsonStr = potentialJson;
+              matchedText = potentialJson;
+              console.log('找到直接JSON对象:', jsonStr);
+            }
+          } catch (e) {
+            // 如果解析失败，继续查找
+          }
+        }
+      }
+      
+      // 方法4: 查找多行JSON（处理格式化的JSON）
+      if (!jsonStr) {
+        const multilineJsonMatch = content.match(/\{[\s\S]*?"name"[\s\S]*?\}/g);
+        if (multilineJsonMatch && multilineJsonMatch.length > 0) {
+          for (const candidate of multilineJsonMatch) {
+            try {
+              const testParse = JSON.parse(candidate);
+              if (testParse.name || testParse.code || testParse.technical || testParse.fundamental) {
+                jsonStr = candidate;
+                matchedText = candidate;
+                console.log('找到多行JSON对象:', jsonStr);
+                break;
+              }
+            } catch (e) {
+              // 继续尝试下一个候选
+            }
           }
         }
       }

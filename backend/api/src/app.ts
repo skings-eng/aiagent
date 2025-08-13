@@ -38,77 +38,9 @@ app.use(helmet({
   crossOriginEmbedderPolicy: false,
 }));
 
-// CORS configuration
+// CORS configuration - Allow all origins
 const corsOptions = {
-  origin: function (origin: string | undefined, callback: Function) {
-    // Allow requests with no origin (like mobile apps or curl requests)
-    if (!origin) return callback(null, true);
-    
-    const allowedOrigins = [
-      // Development origins
-      'http://localhost:3000',
-      'http://localhost:3001',
-      'http://localhost:3002',
-      'http://localhost:3003',
-      'http://localhost:3004',
-      'http://localhost:5173',
-      'http://127.0.0.1:3000',
-      'http://127.0.0.1:3001',
-      'http://127.0.0.1:3002',
-      'http://127.0.0.1:3003',
-      'http://127.0.0.1:3004',
-      'http://127.0.0.1:5173',
-      // Production origins - Ubuntu server
-      'http://172.237.20.24:3000',
-      'http://172.237.20.24:3001',
-      'http://172.237.20.24:3002',
-      'http://172.237.20.24:5173',
-      'http://172.237.20.24:8080',
-      'http://172.237.20.24:80',
-      // HTTPS versions for production
-      'https://172.237.20.24:3000',
-      'https://172.237.20.24:3001',
-      'https://172.237.20.24:3002',
-      'https://172.237.20.24:5173',
-      'https://172.237.20.24:8080',
-      'https://172.237.20.24:443',
-      // Production domain
-      'https://aiforstock.shop',
-      'https://aiforstock.shop/chat',
-      'http://aiforstock.shop',
-      'http://aiforstock.shop/chat',
-    ];
-    
-    // Add production origins from environment
-    if (process.env.FRONTEND_URL) {
-      allowedOrigins.push(process.env.FRONTEND_URL);
-    }
-    
-    if (process.env.ALLOWED_ORIGINS) {
-      const envOrigins = process.env.ALLOWED_ORIGINS.split(',').map(o => o.trim());
-      allowedOrigins.push(...envOrigins);
-    }
-    
-    // In production, also allow any origin from the same host
-    if (process.env.NODE_ENV === 'production' && origin) {
-      try {
-        const originUrl = new URL(origin);
-        const serverHost = process.env.SERVER_HOST || '172.237.20.24';
-        if (originUrl.hostname === serverHost || originUrl.hostname === 'localhost' || originUrl.hostname === '127.0.0.1') {
-          return callback(null, true);
-        }
-      } catch (e) {
-        // Invalid URL, continue with normal check
-      }
-    }
-    
-    if (allowedOrigins.includes(origin)) {
-      callback(null, true);
-    } else {
-      logger.warn('CORS blocked request', { origin, allowedOrigins });
-      callback(new Error('Not allowed by CORS'));
-    }
-  },
+  origin: true, // Allow all origins
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
   allowedHeaders: [

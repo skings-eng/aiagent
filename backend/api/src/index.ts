@@ -30,7 +30,7 @@ const app = express();
 const server = createServer(app);
 const io = new Server(server, {
   cors: {
-    origin: process.env.CORS_ORIGIN?.split(',') || ['http://localhost:3000', 'http://localhost:3001'],
+    origin: true, // Allow all origins
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
     credentials: true,
   },
