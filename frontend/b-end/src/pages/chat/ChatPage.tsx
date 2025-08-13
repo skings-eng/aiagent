@@ -224,10 +224,10 @@ const ChatPage: React.FC = () => {
           </div>
           <div>
             <h1 className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent">
-              AI株式分析チャット
+              {t('title')}
             </h1>
             <p className="text-xs sm:text-sm text-gray-600 mt-1">
-              AIアシスタントと株式について話しましょう
+              {t('subtitle')}
             </p>
           </div>
         </div>
@@ -242,10 +242,10 @@ const ChatPage: React.FC = () => {
                 <Brain className="w-8 h-8 text-white" />
               </div>
               <h2 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent mb-3">
-                AI株式アナリスト
+                {t('welcome.title')}
               </h2>
               <p className="text-gray-600 max-w-lg mx-auto text-sm">
-                高度なアルゴリズムによる株式分析・投資判断支援システム
+                {t('welcome.description')}
               </p>
             </div>
 
@@ -253,10 +253,10 @@ const ChatPage: React.FC = () => {
             <div className="max-w-2xl mx-auto px-4">
               <div className="flex flex-wrap justify-center gap-2 sm:gap-3 mb-6">
                 {[
-                  'AAPL分析',
-                  '市場概況',
-                  'トップ銘柄',
-                  'リスク評価'
+                  t('quickActions.analyzeStock'),
+                  t('quickActions.marketTrends'),
+                  t('quickActions.portfolioAdvice'),
+                  t('quickActions.riskAssessment')
                 ].map((action, index) => (
                   <button
                     key={index}
@@ -272,15 +272,15 @@ const ChatPage: React.FC = () => {
                 <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-4">
                   <span className="flex items-center space-x-1">
                     <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                    <span>リアルタイム分析</span>
+                    <span>{t('status.realtimeAnalysis')}</span>
                   </span>
                   <span className="flex items-center space-x-1">
                     <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                    <span>AI予測モデル</span>
+                    <span>{t('status.aiPrediction')}</span>
                   </span>
                   <span className="flex items-center space-x-1">
                     <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
-                    <span>テクニカル指標</span>
+                    <span>{t('status.technicalIndicators')}</span>
                   </span>
                 </div>
               </div>
@@ -414,11 +414,11 @@ const ChatPage: React.FC = () => {
                       <div className="w-2 h-2 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
                     </div>
                     <span className="text-sm font-medium text-gray-700">
-                      AI が分析中...
+                      {t('input.thinking')}
                     </span>
                   </div>
                   <div className="text-xs text-gray-500">
-                    <span className="text-blue-600 font-medium">約30-90秒お待ちください（株式分析時は時間がかかる場合があります）</span>
+                    <span className="text-blue-600 font-medium">{t('messages.waitMessage')}</span>
                   </div>
                 </div>
               </div>
@@ -443,7 +443,7 @@ const ChatPage: React.FC = () => {
                 value={inputValue}
                 onChange={(e) => setInputValue(e.target.value)}
                 onKeyPress={handleKeyPress}
-                placeholder="株式について質問してください..."
+                placeholder={t('input.placeholder')}
                 className="w-full px-4 py-3 border border-gray-300/30 rounded-xl focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-transparent resize-none bg-white/95 backdrop-blur-sm shadow-sm transition-all duration-200 text-sm"
                 rows={1}
                 disabled={isLoading}
@@ -455,7 +455,7 @@ const ChatPage: React.FC = () => {
               className="px-4 py-3 bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-xl hover:from-blue-600 hover:to-indigo-700 focus:outline-none focus:ring-1 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2 shadow-sm hover:shadow-md transition-all duration-200"
             >
               <Send className="w-4 h-4" />
-              <span className="text-sm font-medium">送信</span>
+              <span className="text-sm font-medium">{t('input.send')}</span>
             </button>
           </div>
           
@@ -463,7 +463,7 @@ const ChatPage: React.FC = () => {
           <div className="flex items-center justify-center mt-3">
             <div className="flex items-center space-x-2 text-xs text-gray-500">
               <div className="w-1.5 h-1.5 bg-green-500 rounded-full"></div>
-              <span>AI株式アナリスト準備完了</span>
+              <span>{t('messages.ready')}</span>
             </div>
           </div>
         </div>

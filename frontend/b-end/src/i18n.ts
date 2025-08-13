@@ -37,7 +37,8 @@ const resources = {
   ja: {
     translation: {
       ...jaChat
-    }
+    },
+    chat: jaChat
   }
 };
 
@@ -47,8 +48,8 @@ i18n
   .init({
     resources,
     lng: 'ja', // 默认语言
-    fallbackLng: 'zh', // 回退语言
-    debug: process.env.NODE_ENV === 'development',
+    fallbackLng: 'en', // 回退语言
+    debug: false, // 关闭调试模式以减少控制台输出
     
     interpolation: {
       escapeValue: false // React 已经默认转义
@@ -56,7 +57,7 @@ i18n
     
     // 命名空间配置
     defaultNS: 'translation',
-    ns: ['translation'],
+    ns: ['translation', 'chat'],
     
     // 检测配置
     detection: {

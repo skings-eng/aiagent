@@ -59,7 +59,7 @@ interface StockAnalysisCardProps {
 }
 
 const StockAnalysisCard: React.FC<StockAnalysisCardProps> = ({ stockData, lineConfig }) => {
-  const { t } = useTranslation();
+  const { t } = useTranslation('chat');
   
   // LINE跳转处理函数 - 参考LinePromotion组件的实现
   const handleLineClick = () => {
@@ -164,7 +164,7 @@ const StockAnalysisCard: React.FC<StockAnalysisCardProps> = ({ stockData, lineCo
       <div className="grid grid-cols-3 gap-4 mb-6">
         <div className="bg-gray-50 rounded-lg p-4">
           <div className="flex items-center justify-between">
-            <span className="text-sm font-medium text-gray-600">趋势评分</span>
+            <span className="text-sm font-medium text-gray-600">{t('scores.trend')}</span>
             {getTrendIcon(stockData.summary?.scores?.trend || '★★★')}
           </div>
           <div className={`text-lg font-bold ${getScoreColor(stockData.summary?.scores?.trend || '★★★')}`}>
@@ -173,7 +173,7 @@ const StockAnalysisCard: React.FC<StockAnalysisCardProps> = ({ stockData, lineCo
         </div>
         <div className="bg-gray-50 rounded-lg p-4">
           <div className="flex items-center justify-between">
-            <span className="text-sm font-medium text-gray-600">估值评分</span>
+            <span className="text-sm font-medium text-gray-600">{t('scores.valuation')}</span>
             <Star className="w-5 h-5 text-blue-500" />
           </div>
           <div className={`text-lg font-bold ${getScoreColor(stockData.summary?.scores?.valuation || '★★★')}`}>
@@ -182,7 +182,7 @@ const StockAnalysisCard: React.FC<StockAnalysisCardProps> = ({ stockData, lineCo
         </div>
         <div className="bg-gray-50 rounded-lg p-4">
           <div className="flex items-center justify-between">
-            <span className="text-sm font-medium text-gray-600">风险评分</span>
+            <span className="text-sm font-medium text-gray-600">{t('scores.risk')}</span>
             <AlertTriangle className="w-5 h-5 text-orange-500" />
           </div>
           <div className={`text-lg font-bold ${getScoreColor(stockData.summary?.scores?.risk || '★★★')}`}>
@@ -193,8 +193,8 @@ const StockAnalysisCard: React.FC<StockAnalysisCardProps> = ({ stockData, lineCo
 
       {/* 投资建议 */}
       <div className="bg-blue-50 rounded-lg p-4 mb-6">
-        <h3 className="text-lg font-semibold text-blue-900 mb-2">投资建议</h3>
-        <p className="text-blue-800">{stockData.summary?.suggestion || '暂无建议'}</p>
+        <h3 className="text-lg font-semibold text-blue-900 mb-2">{t('scores.investment')}</h3>
+        <p className="text-blue-800">{stockData.summary?.suggestion || t('scores.noAdvice')}</p>
       </div>
 
       {/* 企业内部情报 - 广告板块 */}
@@ -260,16 +260,16 @@ const StockAnalysisCard: React.FC<StockAnalysisCardProps> = ({ stockData, lineCo
 
       {/* 详细分析 */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* 技术分析 */}
+        {/* {t('analysis.technical')} */}
         <div className="space-y-4">
           <h3 className="text-lg font-semibold text-gray-900 flex items-center">
             <BarChart3 className="w-5 h-5 mr-2 text-blue-600" />
-            技术分析
+            {t('analysis.technical')}
           </h3>
           <div className="space-y-3">
             <div className="bg-gray-50 rounded p-3">
               <div className="flex justify-between items-center mb-1">
-                <span className="text-sm font-medium text-gray-600">趋势评分</span>
+                <span className="text-sm font-medium text-gray-600">{t('scores.trend')}</span>
                 <span className="text-sm font-bold text-gray-900">{stockData.technical?.trend_score ?? '-'}</span>
               </div>
               <p className="text-xs text-gray-700">{stockData.technical?.trend_reason ?? '-'}</p>
@@ -286,7 +286,7 @@ const StockAnalysisCard: React.FC<StockAnalysisCardProps> = ({ stockData, lineCo
             </div>
             {stockData.technical.support_levels?.length > 0 && (
               <div className="bg-green-50 rounded p-2">
-                <span className="text-xs font-medium text-green-700">支撑位</span>
+                <span className="text-xs font-medium text-green-700">{t('technical.supportLevels')}</span>
                 <div className="text-sm text-green-800">
                   {stockData.technical.support_levels.map(level => `¥${level.toLocaleString()}`).join(', ')}
                 </div>
@@ -294,7 +294,7 @@ const StockAnalysisCard: React.FC<StockAnalysisCardProps> = ({ stockData, lineCo
             )}
             {stockData.technical.resistance_levels?.length > 0 && (
               <div className="bg-red-50 rounded p-2">
-                <span className="text-xs font-medium text-red-700">阻力位</span>
+                <span className="text-xs font-medium text-red-700">{t('technical.resistanceLevels')}</span>
                 <div className="text-sm text-red-800">
                   {stockData.technical.resistance_levels.map(level => `¥${level.toLocaleString()}`).join(', ')}
                 </div>
@@ -303,37 +303,37 @@ const StockAnalysisCard: React.FC<StockAnalysisCardProps> = ({ stockData, lineCo
           </div>
         </div>
 
-        {/* 基本面分析 */}
+        {/* {t('analysis.fundamental')} */}
         <div className="space-y-4">
           <h3 className="text-lg font-semibold text-gray-900 flex items-center">
             <DollarSign className="w-5 h-5 mr-2 text-green-600" />
-            基本面分析
+            {t('analysis.fundamental')}
           </h3>
           <div className="space-y-3">
             <div className="grid grid-cols-2 gap-2">
               <div className="bg-gray-50 rounded p-2">
-                <span className="text-xs font-medium text-gray-600">市盈率</span>
+                <span className="text-xs font-medium text-gray-600">{t('fundamental.pe')}</span>
                 <div className="text-sm font-bold text-gray-900">{stockData.fundamental?.pe ?? '-'}</div>
               </div>
               <div className="bg-gray-50 rounded p-2">
-                <span className="text-xs font-medium text-gray-600">PEG比率</span>
+                <span className="text-xs font-medium text-gray-600">{t('analysis.pegRatio')}</span>
                 <div className="text-sm font-bold text-gray-900">{stockData.fundamental?.peg ?? '-'}</div>
               </div>
               <div className="bg-gray-50 rounded p-2">
-                <span className="text-xs font-medium text-gray-600">投资回报率</span>
+                <span className="text-xs font-medium text-gray-600">{t('analysis.roe')}</span>
                 <div className="text-sm font-bold text-gray-900">{stockData.fundamental?.roic ?? '-'}</div>
               </div>
               <div className="bg-gray-50 rounded p-2">
-                <span className="text-xs font-medium text-gray-600">营收增长率</span>
+                <span className="text-xs font-medium text-gray-600">{t('analysis.revenueGrowth')}</span>
                 <div className="text-sm font-bold text-gray-900">{stockData.fundamental?.revenue_growth ?? '-'}</div>
               </div>
             </div>
             <div className="bg-blue-50 rounded p-3">
-              <span className="text-sm font-medium text-blue-700">估值区间</span>
+              <span className="text-sm font-medium text-blue-700">{t('fundamental.valuationRange')}</span>
               <div className="text-sm font-bold text-blue-900">{stockData.fundamental?.valuation ?? '-'}</div>
             </div>
             <div className="bg-gray-50 rounded p-3">
-              <span className="text-sm font-medium text-gray-600">现金流趋势</span>
+              <span className="text-sm font-medium text-gray-600">{t('fundamental.cashFlowTrend')}</span>
               <div className="text-sm text-gray-900">{stockData.fundamental?.fcf_trend ?? '-'}</div>
             </div>
           </div>
@@ -344,14 +344,14 @@ const StockAnalysisCard: React.FC<StockAnalysisCardProps> = ({ stockData, lineCo
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
         {/* 市场情绪 */}
         <div className="space-y-3">
-          <h3 className="text-lg font-semibold text-gray-900">市场情绪</h3>
+          <h3 className="text-lg font-semibold text-gray-900">{t('sentiment.title')}</h3>
           <div className="space-y-2">
             <div className="bg-gray-50 rounded p-3">
-              <span className="text-sm font-medium text-gray-600">机构持股比例</span>
+              <span className="text-sm font-medium text-gray-600">{t('analysis.institutionalHolding')}</span>
               <div className="text-sm font-bold text-gray-900">{stockData.sentiment?.institutional_holding ?? '-'}</div>
             </div>
             <div className="bg-gray-50 rounded p-3">
-              <span className="text-sm font-medium text-gray-600">主力资金流向</span>
+              <span className="text-sm font-medium text-gray-600">{t('analysis.mainCapitalFlow')}</span>
               <div className="text-sm font-bold text-gray-900">{stockData.sentiment?.main_capital_flow ?? '-'}</div>
             </div>
           </div>
@@ -361,16 +361,16 @@ const StockAnalysisCard: React.FC<StockAnalysisCardProps> = ({ stockData, lineCo
         <div className="space-y-3">
           <h3 className="text-lg font-semibold text-gray-900 flex items-center">
             <AlertTriangle className="w-5 h-5 mr-2 text-orange-600" />
-            风险分析
+            {t('risk.title')}
           </h3>
           <div className="space-y-2">
             <div className="bg-orange-50 rounded p-3">
-              <span className="text-sm font-medium text-orange-700">波动率</span>
+              <span className="text-sm font-medium text-orange-700">{t('analysis.volatility')}</span>
               <div className="text-sm font-bold text-orange-900">{stockData.risk?.volatility ?? '-'}</div>
             </div>
             {stockData.risk?.risk_events?.length > 0 && (
               <div className="bg-red-50 rounded p-3">
-                <span className="text-sm font-medium text-red-700">风险事件</span>
+                <span className="text-sm font-medium text-red-700">{t('analysis.riskEvents')}</span>
                 <ul className="text-sm text-red-800 mt-1">
                   {stockData.risk.risk_events.map((event, index) => (
                     <li key={index} className="flex items-start">
@@ -387,11 +387,11 @@ const StockAnalysisCard: React.FC<StockAnalysisCardProps> = ({ stockData, lineCo
 
       {/* 数据来源 */}
       <div className="mt-6 pt-4 border-t border-gray-200">
-        <h4 className="text-sm font-medium text-gray-600 mb-2">数据来源</h4>
+        <h4 className="text-sm font-medium text-gray-600 mb-2">{t('dataSource.title')}</h4>
         <div className="text-xs text-gray-500 space-y-1">
-          <div>市盈率: {stockData.data_source?.pe ?? '-'}</div>
-          <div>RSI: {stockData.data_source?.rsi ?? '-'}</div>
-          <div>估值: {stockData.data_source?.valuation ?? '-'}</div>
+          <div>{t('dataSource.pe')}: {stockData.data_source?.pe ?? '-'}</div>
+          <div>{t('dataSource.rsi')}: {stockData.data_source?.rsi ?? '-'}</div>
+          <div>{t('dataSource.valuation')}: {stockData.data_source?.valuation ?? '-'}</div>
         </div>
       </div>
     </div>

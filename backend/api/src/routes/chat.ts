@@ -48,18 +48,47 @@ async function getSystemPrompt(): Promise<string> {
 \`\`\`json
 {
   "name": "公司名称",
-  "code": "股票代码", 
+  "name_ja": "日文公司名称",
+  "code": "股票代码",
   "price": 当前价格,
+  "industry": "行业",
   "technical": {
-    "trend_score": "1-5分",
+    "trend_score": "★★★★☆",
+    "trend_reason": "技术分析说明",
+    "support_levels": [支撑位数组],
+    "resistance_levels": [阻力位数组],
     "rsi": "RSI值",
-    "trend_reason": "趋势说明"
+    "macd": "MACD信号"
+  },
+  "fundamental": {
+    "pe": "市盈率",
+    "peg": "PEG比率",
+    "roic": "投资回报率",
+    "revenue_growth": "营收增长率",
+    "fcf_trend": "现金流趋势",
+    "valuation": "估值区间"
+  },
+  "sentiment": {
+    "institutional_holding": "机构持股比例",
+    "main_capital_flow": "主力资金流向"
+  },
+  "risk": {
+    "volatility": "波动率",
+    "risk_events": ["风险事件数组"]
   },
   "summary": {
-    "suggestion": "投资建议",
-    "risk_level": "风险等级"
+    "scores": {
+      "trend": "★★★★☆",
+      "valuation": "★★★☆☆",
+      "risk": "★★★☆☆"
+    },
+    "suggestion": "投资建议"
+  },
+  "data_source": {
+    "pe": "数据来源",
+    "rsi": "数据来源",
+    "valuation": "数据来源"
   }
-}
 }
 \`\`\`
 

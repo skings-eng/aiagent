@@ -42,7 +42,9 @@
     "error": "申し訳ございません。エラーが発生しました。もう一度お試しください。",
     "retry": "再試行",
     "copy": "コピー",
-    "copied": "コピーしました！"
+    "copied": "コピーしました！",
+    "waitMessage": "約30-90秒お待ちください（株式分析時は時間がかかる場合があります）",
+    "ready": "AI株式アナリスト準備完了"
   },
   "stockCard": {
     "price": "価格",
@@ -66,7 +68,10 @@
   "status": {
     "online": "オンライン",
     "offline": "オフライン",
-    "connecting": "接続中..."
+    "connecting": "接続中...",
+    "realtimeAnalysis": "リアルタイム分析",
+    "aiPrediction": "AI予測モデル",
+    "technicalIndicators": "テクニカル指標"
   },
   "line": {
     "promotion": {
@@ -86,5 +91,44 @@
       "guide": "内部情報はLINE追加後にご確認ください",
       "advisor": "プロの投資アドバイザーによる1対1指導"
     }
+  },
+  "scores": {
+    "trend": "トレンドスコア",
+    "valuation": "バリュエーションスコア",
+    "risk": "リスクスコア",
+    "investment": "投資アドバイス",
+    "noAdvice": "アドバイスなし"
+  },
+  "analysis": {
+    "technical": "テクニカル分析",
+    "fundamental": "ファンダメンタル分析",
+    "pegRatio": "PEGレシオ",
+    "roe": "投資収益率",
+    "revenueGrowth": "売上成長率",
+    "institutionalHolding": "機関投資家持株比率",
+    "mainCapitalFlow": "主力資金フロー",
+    "volatility": "ボラティリティ",
+    "riskEvents": "リスクイベント"
+  },
+  "technical": {
+    "supportLevels": "サポートレベル",
+    "resistanceLevels": "レジスタンスレベル"
+  },
+  "fundamental": {
+    "pe": "株価収益率",
+    "valuationRange": "評価レンジ",
+    "cashFlowTrend": "キャッシュフロートレンド"
+  },
+  "sentiment": {
+    "title": "市場センチメント"
+  },
+  "risk": {
+    "title": "リスク分析"
+  },
+  "dataSource": {
+    "title": "データソース",
+    "pe": "株価収益率",
+    "rsi": "RSI",
+    "valuation": "評価"
   }
 }
