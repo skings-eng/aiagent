@@ -200,7 +200,7 @@ const Layout: React.FC = () => {
                 </a>
               </div>
               <div className="text-center text-xs text-gray-500 mt-4">
-                © 2024 智能投资助手. All rights reserved.
+               © 2025 スマート投資アシスタント. All rights reserved.
               </div>
             </div>
           </footer>
