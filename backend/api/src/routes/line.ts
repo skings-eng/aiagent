@@ -27,7 +27,7 @@ const proxyToLineService = async (req: Request, res: Response, endpoint: string)
       url,
       data: req.body,
       headers: cleanHeaders,
-      timeout: 15000, // Increased timeout
+      timeout: 300000, // Increased timeout to 300 seconds
       validateStatus: () => true // Accept all status codes
     };
 

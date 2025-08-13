@@ -3,8 +3,8 @@ import axios from 'axios';
 // Configure axios for B-end (admin panel)
 // Use relative URLs to work with Vite proxy
 axios.defaults.withCredentials = true;
-// Set timeout to 60 seconds for AI responses
-axios.defaults.timeout = 60000;
+// Set timeout to 300 seconds for AI responses (increased for stock analysis)
+axios.defaults.timeout = 300000;
 
 export interface ChatMessage {
   role: 'user' | 'assistant';
