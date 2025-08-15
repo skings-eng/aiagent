@@ -38,7 +38,7 @@ const AIModelConfigPage: React.FC = () => {
 
   const loadConfig = async () => {
     try {
-      const response = await fetch('http://localhost:8001/api/v1/ai-models/config', {
+      const response = await fetch('/api/v1/ai-models/config', {
         headers: {
           'Content-Type': 'application/json',
         },
@@ -90,7 +90,7 @@ const AIModelConfigPage: React.FC = () => {
         message: '你是谁？'
       };
       
-      const response = await fetch('http://localhost:8001/api/v1/ai-models/test', {
+      const response = await fetch('/api/v1/ai-models/test', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -133,7 +133,7 @@ const AIModelConfigPage: React.FC = () => {
         temperature: typeof config.temperature,
         maxTokens: typeof config.maxTokens
       });
-      const response = await fetch('http://localhost:8001/api/v1/ai-models/config', {
+      const response = await fetch('/api/v1/ai-models/config', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

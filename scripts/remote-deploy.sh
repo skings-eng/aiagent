@@ -894,7 +894,8 @@ module.exports = {
       args: 'run preview -- --port $FRONTEND_PORT --host 0.0.0.0',
       cwd: '$DEPLOY_PATH/frontend/b-end',
       env: {
-        NODE_ENV: '$NODE_ENV'
+        NODE_ENV: '$NODE_ENV',
+        VITE_API_URL: 'http://localhost:$API_PORT'
       },
       instances: 1,
       exec_mode: 'fork',

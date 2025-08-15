@@ -16,7 +16,7 @@ export default defineConfig({
     host: true,
     proxy: {
       '/api': {
-        target: 'http://localhost:8001',
+        target: process.env.VITE_API_URL || 'http://localhost:8001',
         changeOrigin: true,
         secure: false,
       },
@@ -27,7 +27,7 @@ export default defineConfig({
     host: true,
     proxy: {
       '/api': {
-        target: 'http://localhost:8001',
+        target: process.env.VITE_API_URL || 'http://localhost:8001',
         changeOrigin: true,
         secure: false,
       },
