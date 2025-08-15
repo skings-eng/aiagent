@@ -3,7 +3,7 @@ module.exports = {
     {
       name: 'aiagent-api',
       script: './backend/api/dist/server.js',
-      cwd: '/root/aiagent',
+      cwd: '/Users/kencode/mac/vuedev/aiagent',
       env: {
         NODE_ENV: 'development',
         PORT: 8001
@@ -24,7 +24,7 @@ module.exports = {
     {
       name: 'aiagent-line',
       script: './backend/line/dist/index.js',
-      cwd: '/root/aiagent',
+      cwd: '/Users/kencode/mac/vuedev/aiagent',
       env: {
         NODE_ENV: 'development',
         PORT: 3003
@@ -46,7 +46,7 @@ module.exports = {
       name: 'aiagent-frontend',
       script: 'npm',
       args: 'run preview -- --port 3000 --host 0.0.0.0',
-      cwd: '/root/aiagent/frontend/b-end',
+      cwd: '/Users/kencode/mac/vuedev/aiagent/frontend/b-end',
       env: {
         NODE_ENV: 'development'
       },
@@ -66,7 +66,7 @@ module.exports = {
     {
       name: 'aiagent-mcp',
       script: './backend/api/mcp-yfinance-server/start_mcp.sh',
-      cwd: '/root/aiagent',
+      cwd: '/Users/kencode/mac/vuedev/aiagent',
       instances: 1,
       exec_mode: 'fork',
       watch: false,

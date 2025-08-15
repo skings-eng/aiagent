@@ -1,8 +1,8 @@
 import express, { Request, Response } from 'express';
 import { body, validationResult } from 'express-validator';
-import { GoogleGenerativeAI } from '@google/generative-ai';
+import OpenAI from 'openai';
 import { logger } from '../utils/logger';
-import { geminiConfig } from './aiModels';
+import { aiModelConfig } from './aiModels';
 import { aiModelLimiter } from '../middleware/rateLimiter';
 import { checkLinePromotionTrigger } from '../utils/linePromotion';
 import Settings from '../models/Settings';
@@ -157,9 +157,16 @@ router.post('/',
         historyLength: history.length
       });
 
-      // Check if Gemini API key is configured
-      if (!geminiConfig.apiKey) {
-        logger.error('Gemini API key not configured');
+      // Check if GPT-4o API key is configured
+      logger.info('Checking GPT-4o API key configuration', {
+        hasApiKey: !!aiModelConfig.apiKey,
+        apiKeyLength: aiModelConfig.apiKey ? aiModelConfig.apiKey.length : 0,
+        isConnected: aiModelConfig.isConnected,
+        model: aiModelConfig.model
+      });
+      
+      if (!aiModelConfig.apiKey) {
+        logger.error('GPT-4o API key not configured');
         return res.status(500).json({
           success: false,
           message: 'AI service not configured'
@@ -173,21 +180,7 @@ router.post('/',
         promptPreview: systemPromptContent.substring(0, 100) + '...'
       });
       
-      // Convert chat history to Gemini format and add system prompt at the beginning
-      const conversationHistory = [
-        {
-          role: 'user',
-          parts: [{ text: systemPromptContent }]
-        },
-        {
-          role: 'model',
-          parts: [{ text: '我明白了。我是一个专业的股票分析AI助手，能够分析全球股票市场，包括美国、日本、中国等各大交易所的股票。我会使用MCP工具获取实时股票数据，并用中文回答您的问题。在分析股票时我会严格按照JSON格式输出分析数据。请问您需要什么帮助？' }]
-        },
-        ...history.map(msg => ({
-          role: msg.role === 'assistant' ? 'model' : 'user',
-          parts: [{ text: msg.content }]
-        }))
-      ];
+      // Note: Chat history will be converted to OpenAI format later in the code
 
       // Check if message contains stock symbol and fetch data before sending to AI
       let enhancedMessage = message;
@@ -362,63 +355,68 @@ router.post('/',
         }
       }
 
-      // Initialize Google AI with current API key
-      logger.info('Initializing Gemini API', {
-        model: geminiConfig.model,
-        conversationHistoryLength: conversationHistory.length,
+      // Initialize OpenAI API with current API key
+      logger.info('Initializing GPT-4o API', {
+        model: aiModelConfig.model,
+        conversationHistoryLength: history.length,
         messagePreview: enhancedMessage.substring(0, 100) + '...'
       });
       
-      const genAI = new GoogleGenerativeAI(geminiConfig.apiKey);
-      const model = genAI.getGenerativeModel({ model: geminiConfig.model });
-
-      // Start chat with conversation history
-      const chat = model.startChat({
-        history: conversationHistory,
-        generationConfig: {
-          maxOutputTokens: 4000,  // Increased for longer responses
-          temperature: 0.7,       // Slightly higher for creativity
-          topP: 0.9,             // Higher for better quality
-          topK: 40,              // Increased for better generation
-        },
-        safetySettings: [
-          {
-            category: 'HARM_CATEGORY_HARASSMENT' as any,
-            threshold: 'BLOCK_NONE' as any
-          },
-          {
-            category: 'HARM_CATEGORY_HATE_SPEECH' as any,
-            threshold: 'BLOCK_NONE' as any
-          },
-          {
-            category: 'HARM_CATEGORY_SEXUALLY_EXPLICIT' as any,
-            threshold: 'BLOCK_NONE' as any
-          },
-          {
-            category: 'HARM_CATEGORY_DANGEROUS_CONTENT' as any,
-            threshold: 'BLOCK_NONE' as any
-          }
-        ]
+      // Initialize OpenAI client
+      const openai = new OpenAI({
+        apiKey: aiModelConfig.apiKey,
       });
 
-      // Send enhanced message and get response
+      // Convert conversation history to OpenAI format
+      const messages: OpenAI.Chat.Completions.ChatCompletionMessageParam[] = [
+        {
+          role: 'system',
+          content: systemPromptContent
+        },
+        ...history.map(msg => ({
+          role: msg.role as 'user' | 'assistant',
+          content: msg.content
+        })),
+        {
+          role: 'user',
+          content: enhancedMessage
+        }
+      ];
+
+      // Send message to OpenAI and get response
       let aiResponse;
       try {
-        const result = await chat.sendMessage(enhancedMessage);
-        const response = await result.response;
+        const actualMaxTokens = aiModelConfig.maxTokens || 4000;
+        const actualTemperature = aiModelConfig.temperature || 0.7;
         
-        // Log the full response for debugging
-        logger.info('Gemini API response details', {
-          candidates: response.candidates?.length || 0,
-          finishReason: response.candidates?.[0]?.finishReason,
-          safetyRatings: response.candidates?.[0]?.safetyRatings
+        logger.info('OpenAI API call parameters', {
+          model: aiModelConfig.model || 'gpt-4o',
+          maxTokens: actualMaxTokens,
+          temperature: actualTemperature,
+          configuredMaxTokens: aiModelConfig.maxTokens,
+          configuredTemperature: aiModelConfig.temperature
         });
         
-        aiResponse = await response.text();
+        const completion = await openai.chat.completions.create({
+          model: aiModelConfig.model || 'gpt-4o',
+          messages: messages,
+          max_tokens: actualMaxTokens,
+          temperature: actualTemperature,
+          top_p: 0.9,
+        });
+        
+        // Log the full response for debugging
+        logger.info('OpenAI API response details', {
+          choices: completion.choices?.length || 0,
+          finishReason: completion.choices?.[0]?.finish_reason,
+          usage: completion.usage
+        });
+        
+        aiResponse = completion.choices?.[0]?.message?.content || '';
         
         // Check if response is empty and handle accordingly
         if (!aiResponse || aiResponse.trim().length === 0) {
-          logger.warn('Gemini API returned empty response, using fallback');
+          logger.warn('OpenAI API returned empty response, using fallback');
           aiResponse = `您好！我是您的日本股市分析AI助手。请告诉我您想分析的股票代码或公司名称，例如 '丰田汽车' 或 '7203.T'，我将为您提供详细的分析报告。`;
         }
       } catch (error) {
@@ -429,10 +427,10 @@ router.post('/',
           errorType: error instanceof Error ? error.constructor.name : 'Unknown',
           errorMessage: error instanceof Error ? error.message : String(error),
           errorStack: error instanceof Error ? error.stack : undefined,
-          geminiConfig: {
-            hasApiKey: !!geminiConfig.apiKey,
-            model: geminiConfig.model,
-            apiKeyLength: geminiConfig.apiKey ? geminiConfig.apiKey.length : 0
+          aiModelConfig: {
+          hasApiKey: !!aiModelConfig.apiKey,
+          model: aiModelConfig.model,
+          apiKeyLength: aiModelConfig.apiKey ? aiModelConfig.apiKey.length : 0
           },
           requestInfo: {
             messageLength: message.length,
@@ -442,7 +440,7 @@ router.post('/',
           }
         };
 
-        logger.error('Gemini API call failed, using fallback response', errorDetails);
+        logger.error('OpenAI API call failed, using fallback response', errorDetails);
         
         // Fallback response when Gemini API is not accessible
         aiResponse = `抱歉，目前无法连接到AI服务。这可能是由于网络连接问题。请稍后再试。\n\n如果您需要股票信息，建议您：\n1. 检查网络连接\n2. 稍后重试\n3. 联系技术支持\n\n感谢您的理解。`;
@@ -453,10 +451,10 @@ router.post('/',
         console.log('User ID:', errorDetails.userId);
         console.log('Error Type:', errorDetails.errorType);
         console.log('Error Message:', errorDetails.errorMessage);
-        console.log('Gemini Config Status:');
-        console.log('  - Has API Key:', errorDetails.geminiConfig.hasApiKey);
-        console.log('  - Model:', errorDetails.geminiConfig.model);
-        console.log('  - API Key Length:', errorDetails.geminiConfig.apiKeyLength);
+        console.log('GPT-4o Config Status:');
+        console.log('  - Has API Key:', errorDetails.aiModelConfig.hasApiKey);
+        console.log('  - Model:', errorDetails.aiModelConfig.model);
+        console.log('  - API Key Length:', errorDetails.aiModelConfig.apiKeyLength);
         console.log('Request Info:');
         console.log('  - Message Length:', errorDetails.requestInfo.messageLength);
         console.log('  - History Length:', errorDetails.requestInfo.historyLength);

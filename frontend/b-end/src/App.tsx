@@ -6,7 +6,7 @@ import Layout from './components/layout/Layout';
 import LoginPage from './pages/auth/LoginPage';
 import HomePage from './pages/home/HomePage';
 import ChatPage from './pages/chat/ChatPage';
-import GeminiConfigPage from './pages/gemini/GeminiConfigPage';
+import AIModelConfigPage from './pages/aiConfig/AIModelConfigPage';
 import SystemPromptsPage from './pages/prompts/SystemPromptsPage';
 import LineConfigPage from './pages/line/LineConfigPage';
 import SettingsPage from './pages/settings/SettingsPage';
@@ -44,14 +44,9 @@ const App: React.FC = () => {
                 <StockOptimizationPage />
               </ProtectedRoute>
             } />
-            <Route path="gemini" element={
+            <Route path="aiConfig" element={
               <ProtectedRoute>
-                <GeminiConfigPage />
-              </ProtectedRoute>
-            } />
-            <Route path="gemini-config" element={
-              <ProtectedRoute>
-                <GeminiConfigPage />
+                <AIModelConfigPage />
               </ProtectedRoute>
             } />
             <Route path="prompts" element={

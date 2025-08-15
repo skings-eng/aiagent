@@ -36,10 +36,10 @@ const Layout: React.FC = () => {
       current: location.pathname.startsWith('/stock'),
     },
     {
-      name: 'Gemini配置',
-      href: '/gemini',
+      name: 'AI模型配置',
+      href: '/aiConfig',
       icon: Bot,
-      current: location.pathname === '/gemini',
+      current: location.pathname === '/aiConfig',
     },
     {
       name: '系统提示词',

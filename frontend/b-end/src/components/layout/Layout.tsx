@@ -53,10 +53,10 @@ const Layout: React.FC = () => {
       adminOnly: true,
     },
     {
-      name: 'Gemini配置',
-      href: '/gemini',
+      name: 'AI模型配置',
+      href: '/aiConfig',
       icon: Bot,
-      current: location.pathname === '/gemini',
+      current: location.pathname === '/aiConfig',
       adminOnly: true,
     },
     {
