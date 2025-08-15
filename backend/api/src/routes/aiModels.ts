@@ -45,6 +45,8 @@ export async function loadAIModelConfig(): Promise<void> {
       logger.info('AI model API key loaded from database');
     }
     
+
+    
     // Load model
     const modelSetting = await Settings.getByKey('ai', 'gpt4o_model');
     if (modelSetting) {
@@ -353,6 +355,7 @@ router.post('/config',
       .optional()
       .isFloat({ min: 0, max: 1 })
       .withMessage('Temperature must be between 0 and 1'),
+
   ],
   handleValidationErrors,
   async (req: Request, res: Response, next: NextFunction) => {
@@ -376,7 +379,7 @@ router.post('/config',
       });
 
       // Basic API key validation (skip real API call for demo)
-      if (!apiKey || apiKey.length < 20) {
+      if (!apiKey || apiKey.length < 10) {
         throw new AppError('Invalid API key format', 400);
       }
       
@@ -432,6 +435,8 @@ router.post('/config',
           updatedBy: userObjectId,
         });
       }
+
+
 
       // Save model (still using gpt4o_model for backward compatibility)
       if (modelName) {
