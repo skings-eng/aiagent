@@ -365,6 +365,7 @@ router.post('/',
       // Initialize OpenAI client
       const openai = new OpenAI({
         apiKey: aiModelConfig.apiKey,
+        organization: undefined, // Explicitly prevent reading from OPENAI_ORG_ID env var
       });
 
       // Convert conversation history to OpenAI format

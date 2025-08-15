@@ -549,7 +549,7 @@ JWT_REFRESH_EXPIRES_IN=7d
 # AI Model Configuration
 # OpenAI
 OPENAI_API_KEY=${OPENAI_API_KEY:-your-openai-api-key}
-OPENAI_ORG_ID=your-openai-org-id
+# OPENAI_ORG_ID=removed
 
 # Anthropic Claude
 ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-your-anthropic-api-key}
