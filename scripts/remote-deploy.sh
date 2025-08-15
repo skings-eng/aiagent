@@ -939,6 +939,10 @@ start_services() {
     
     cd "$DEPLOY_PATH"
     
+    # 清理可能存在的旧环境变量
+    echo "清理旧环境变量..."
+    unset OPENAI_ORG_ID 2>/dev/null || true
+    
     # 检查PM2是否安装
     if ! command -v pm2 &> /dev/null; then
         echo "安装PM2..."
