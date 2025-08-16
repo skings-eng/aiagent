@@ -41,40 +41,40 @@ async function getSystemPrompt(): Promise<string> {
     }
     
     // Return default system prompt if nothing found
-    return `你是专业的全球股票分析AI助手，支持美国、日本、中国等各大交易所股票分析。请用中文回答。
+    return `あなたは専門的なグローバル株式分析AIアシスタントです。アメリカ、日本、中国などの主要取引所の株式分析をサポートします。日本語で回答してください。
 
-当用户询问股票时，基于提供的实时数据进行分析，输出JSON格式结果：
+ユーザーが株式について質問した場合、提供されたリアルタイムデータに基づいて分析し、JSON形式で結果を出力してください：
 
 \`\`\`json
 {
-  "name": "公司名称",
-  "name_ja": "日文公司名称",
-  "code": "股票代码",
-  "price": 当前价格,
-  "industry": "行业",
+  "name": "会社名",
+  "name_ja": "日本語会社名",
+  "code": "株式コード",
+  "price": 現在価格,
+  "industry": "業界",
   "technical": {
     "trend_score": "★★★★☆",
-    "trend_reason": "技术分析说明",
-    "support_levels": [支撑位数组],
-    "resistance_levels": [阻力位数组],
-    "rsi": "RSI值",
-    "macd": "MACD信号"
+    "trend_reason": "テクニカル分析説明",
+    "support_levels": [サポートレベル配列],
+    "resistance_levels": [レジスタンスレベル配列],
+    "rsi": "RSI値",
+    "macd": "MACDシグナル"
   },
   "fundamental": {
-    "pe": "市盈率",
+    "pe": "株価収益率",
     "peg": "PEG比率",
-    "roic": "投资回报率",
-    "revenue_growth": "营收增长率",
-    "fcf_trend": "现金流趋势",
-    "valuation": "估值区间"
+    "roic": "投資収益率",
+    "revenue_growth": "売上成長率",
+    "fcf_trend": "キャッシュフロートレンド",
+    "valuation": "評価レンジ"
   },
   "sentiment": {
-    "institutional_holding": "机构持股比例",
-    "main_capital_flow": "主力资金流向"
+    "institutional_holding": "機関投資家保有比率",
+    "main_capital_flow": "主力資金フロー"
   },
   "risk": {
-    "volatility": "波动率",
-    "risk_events": ["风险事件数组"]
+    "volatility": "ボラティリティ",
+    "risk_events": ["リスクイベント配列"]
   },
   "summary": {
     "scores": {
@@ -82,12 +82,12 @@ async function getSystemPrompt(): Promise<string> {
       "valuation": "★★★☆☆",
       "risk": "★★★☆☆"
     },
-    "suggestion": "投资建议"
+    "suggestion": "投資アドバイス"
   },
   "data_source": {
-    "pe": "数据来源",
-    "rsi": "数据来源",
-    "valuation": "数据来源"
+    "pe": "データソース",
+    "rsi": "データソース",
+    "valuation": "データソース"
   }
 }
 \`\`\`
@@ -418,7 +418,7 @@ router.post('/',
         // Check if response is empty and handle accordingly
         if (!aiResponse || aiResponse.trim().length === 0) {
           logger.warn('OpenAI API returned empty response, using fallback');
-          aiResponse = `您好！我是您的日本股市分析AI助手。请告诉我您想分析的股票代码或公司名称，例如 '丰田汽车' 或 '7203.T'，我将为您提供详细的分析报告。`;
+          aiResponse = `こんにちは！私はあなたの日本株式市場分析AIアシスタントです。分析したい株式コードまたは会社名をお教えください。例：'トヨタ自動車' または '7203.T'。詳細な分析レポートを提供いたします。`;
         }
       } catch (error) {
         // Enhanced error logging with detailed information
@@ -444,7 +444,7 @@ router.post('/',
         logger.error('OpenAI API call failed, using fallback response', errorDetails);
         
         // Fallback response when Gemini API is not accessible
-        aiResponse = `抱歉，目前无法连接到AI服务。这可能是由于网络连接问题。请稍后再试。\n\n如果您需要股票信息，建议您：\n1. 检查网络连接\n2. 稍后重试\n3. 联系技术支持\n\n感谢您的理解。`;
+        aiResponse = `申し訳ございませんが、現在AIサービスに接続できません。ネットワーク接続の問題が原因の可能性があります。しばらくしてから再度お試しください。\n\n株式情報が必要な場合は、以下をお試しください：\n1. ネットワーク接続を確認\n2. しばらく待ってから再試行\n3. 技術サポートにお問い合わせ\n\nご理解いただき、ありがとうございます。`;
         
         // Enhanced console log with detailed AI service error information
         console.log('=== AI Service Connection Error - Detailed Log ===');
@@ -480,7 +480,7 @@ router.post('/',
       });
 
       // Check if response contains AI service connection error message and log to console
-      if (aiResponse.includes('抱歉，目前无法连接到AI服务')) {
+      if (aiResponse.includes('申し訳ございませんが、現在AIサービスに接続できません')) {
         console.log('AI Service Connection Error Response:', {
           timestamp: new Date().toISOString(),
           userId: userId,

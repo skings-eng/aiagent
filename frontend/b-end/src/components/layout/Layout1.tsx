@@ -18,43 +18,43 @@ const Layout: React.FC = () => {
 
   const navigation = [
     {
-      name: '首页',
+      name: 'ホーム',
       href: '/home',
       icon: Home,
       current: location.pathname === '/home',
     },
     {
-      name: 'AI聊天',
+      name: 'AIチャット',
       href: '/chat',
       icon: MessageCircle,
       current: location.pathname === '/chat',
     },
     {
-      name: '股票分析',
+      name: '株式分析',
       href: '/stock',
       icon: BarChart3,
       current: location.pathname.startsWith('/stock'),
     },
     {
-      name: 'AI模型配置',
+      name: 'AIモデル設定',
       href: '/aiConfig',
       icon: Bot,
       current: location.pathname === '/aiConfig',
     },
     {
-      name: '系统提示词',
+      name: 'システムプロンプト',
       href: '/prompts',
       icon: FileText,
       current: location.pathname === '/prompts',
     },
     {
-      name: 'LINE配置',
+      name: 'LINE設定',
       href: '/line',
       icon: Smartphone,
       current: location.pathname === '/line',
     },
     {
-      name: '系统设置',
+      name: 'システム設定',
       href: '/settings',
       icon: Settings,
       current: location.pathname === '/settings',

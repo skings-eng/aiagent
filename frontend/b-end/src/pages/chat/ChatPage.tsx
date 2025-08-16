@@ -107,7 +107,7 @@ const ChatPage: React.FC = () => {
         
         // 验证是否包含必要的股票数据字段 - 更宽松的验证
         if (stockData.name && stockData.code && (stockData.price !== undefined || stockData.current_price !== undefined)) {
-          const cleanContent = content.replace(matchedText, '').trim() || '股票分析数据已生成';
+          const cleanContent = content.replace(matchedText, '').trim() || '株式分析データが生成されました';
           console.log('股票数据验证通过，返回结果');
           return {
             stockData,
@@ -118,7 +118,7 @@ const ChatPage: React.FC = () => {
           // 如果包含其他股票相关字段，也认为是有效的股票数据
           if (stockData.technical || stockData.fundamental || stockData.summary) {
             console.log('检测到其他股票分析字段，认为是有效数据');
-            const cleanContent = content.replace(matchedText, '').trim() || '股票分析数据已生成';
+            const cleanContent = content.replace(matchedText, '').trim() || '株式分析データが生成されました';
             return {
               stockData,
               cleanContent

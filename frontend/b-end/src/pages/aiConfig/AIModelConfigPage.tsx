@@ -324,14 +324,14 @@ const AIModelConfigPage: React.FC = () => {
                   {testResult.status === 'success' && (
                     <div className="mt-3 space-y-3">
                       <div>
-                        <p className="text-sm font-medium text-green-700 mb-2">发送内容：</p>
+                        <p className="text-sm font-medium text-green-700 mb-2">送信内容：</p>
                         <div className="bg-blue-50 border border-blue-200 rounded-md p-3">
-                          <p className="text-sm text-gray-700">你是谁？</p>
+                          <p className="text-sm text-gray-700">あなたは誰ですか？</p>
                         </div>
                       </div>
                       {testResult.aiResponse && (
                         <div>
-                          <p className="text-sm font-medium text-green-700 mb-2">AI 响应内容：</p>
+                          <p className="text-sm font-medium text-green-700 mb-2">AI 応答内容：</p>
                           <div className="bg-white border border-green-200 rounded-md p-3">
                             <p className="text-sm text-gray-700 whitespace-pre-wrap">{testResult.aiResponse}</p>
                           </div>
